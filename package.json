@@ -1,10 +1,10 @@
 {
-  "name": "tinode-webapp",
-  "description": "Tinode messenger for the web",
+  "name": "gptchat-webapp",
+  "description": "Gptchat messenger for the web",
   "version": "0.22.7",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tinode/webapp.git"
+    "url": "https://github.com/gptchat/webapp.git"
   },
   "scripts": {
     "start": "echo 'Read installation instructions'",

@@ -1,12 +1,12 @@
-import React from 'react';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import React from "react";
+import { FormattedMessage, defineMessages, injectIntl } from "react-intl";
 
 const messages = defineMessages({
   invalid_id: {
-    id: 'error_invalid_id',
-    defaultMessage: 'Invalid ID',
-    description: 'Error message'
-  }
+    id: "error_invalid_id",
+    defaultMessage: "Invalid ID",
+    description: "Error message",
+  },
 });
 
 class NewTopicById extends React.PureComponent {
@@ -14,7 +14,7 @@ class NewTopicById extends React.PureComponent {
     super(props);
 
     this.state = {
-      groupId: '',
+      groupId: "",
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -23,11 +23,11 @@ class NewTopicById extends React.PureComponent {
   }
 
   handleChange(e) {
-    this.setState({groupId: e.target.value});
+    this.setState({ groupId: e.target.value });
   }
 
   handleKeyPress(e) {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       this.handleSubmit(e);
     }
   }
@@ -37,10 +37,13 @@ class NewTopicById extends React.PureComponent {
     if (this.state.groupId) {
       const name = this.state.groupId.trim();
       const prefix = name.substr(0, 3);
-      if (name.length > 3 && ['usr', 'grp', 'chn'].includes(prefix)) {
+      if (name.length > 3 && ["usr", "grp", "chn"].includes(prefix)) {
         this.props.onSubmit(name);
       } else {
-        this.props.onError(this.props.intl.formatMessage(messages.invalid_id), 'err');
+        this.props.onError(
+          this.props.intl.formatMessage(messages.invalid_id),
+          "err"
+        );
       }
     }
   }
@@ -49,22 +52,36 @@ class NewTopicById extends React.PureComponent {
     return (
       <div className="panel-form">
         <div className="panel-form-row">
-        <FormattedMessage id="group_user_id_prompt" defaultMessage="Group or User ID"
-          description="Prompt for entering user or group ID">{
-          (prompt) => <input type="text" placeholder={prompt}
-            value={this.state.groupId} onChange={this.handleChange}
-            onKeyPress={this.handleKeyPress} required autoFocus />
-        }</FormattedMessage>
+          <FormattedMessage
+            id="group_user_id_prompt"
+            defaultMessage="Group or User ID"
+            description="Prompt for entering user or group ID"
+          >
+            {(prompt) => (
+              <input
+                type="text"
+                placeholder={prompt}
+                value={this.state.groupId}
+                onChange={this.handleChange}
+                onKeyPress={this.handleKeyPress}
+                required
+                autoFocus
+              />
+            )}
+          </FormattedMessage>
         </div>
         <div className="dialog-buttons">
           <button className="primary" onClick={this.handleSubmit}>
-            <FormattedMessage id="button_subscribe" defaultMessage="Subscribe"
-              description="Button [Subscribe]" />
+            <FormattedMessage
+              id="button_subscribe"
+              defaultMessage="Subscribe"
+              description="Button [Subscribe]"
+            />
           </button>
         </div>
       </div>
     );
   }
-};
+}
 
 export default injectIntl(NewTopicById);

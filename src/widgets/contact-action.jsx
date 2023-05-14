@@ -1,6 +1,6 @@
 // A panel included into a list of contacts with an action text.
-import React from 'react';
-import { injectIntl } from 'react-intl';
+import React from "react";
+import { injectIntl } from "react-intl";
 
 class ContactAction extends React.PureComponent {
   constructor(props) {
@@ -16,13 +16,15 @@ class ContactAction extends React.PureComponent {
   }
 
   render() {
-    const {formatMessage} = this.props.intl;
+    const { formatMessage } = this.props.intl;
     return (
       <li onClick={this.handleClick} className="action">
-        <div className="action-text">{formatMessage(this.props.title, this.props.values)}</div>
+        <div className="action-text">
+          {formatMessage(this.props.title, this.props.values)}
+        </div>
       </li>
     );
   }
-};
+}
 
 export default injectIntl(ContactAction);

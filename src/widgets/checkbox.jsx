@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /* CheckBox: styled three-state checkbox, either clickable or static */
 export default class CheckBox extends React.PureComponent {
@@ -13,7 +13,7 @@ export default class CheckBox extends React.PureComponent {
   }
 
   render() {
-    let classList = ['material-icons'];
+    let classList = ["material-icons"];
     let iconName;
     if (Array.isArray(this.props.className)) {
       classList.push(...this.props.className);
@@ -22,29 +22,29 @@ export default class CheckBox extends React.PureComponent {
     }
     if (this.props.onChange) {
       if (this.props.checked) {
-        classList.push('blue', 'clickable');
-        iconName = 'check_box';
+        classList.push("blue", "clickable");
+        iconName = "check_box";
       } else if (this.props.checked === false) {
-        classList.push('blue', 'clickable');
-        iconName = 'check_box_outline_blank';
+        classList.push("blue", "clickable");
+        iconName = "check_box_outline_blank";
       } else {
-        classList.push('lt-blue');
-        iconName = 'indeterminate_check_box';
+        classList.push("lt-blue");
+        iconName = "indeterminate_check_box";
       }
     } else {
-        if (this.props.checked) {
-          iconName = 'check_box';
-        } else {
-          iconName = 'check_box_outline_blank';
-        }
+      if (this.props.checked) {
+        iconName = "check_box";
+      } else {
+        iconName = "check_box_outline_blank";
+      }
     }
     let attrs = {
-      className: classList.join(' '),
+      className: classList.join(" "),
       id: this.props.id,
     };
     if (this.props.onChange) {
       attrs.onClick = this.handleChange;
     }
-    return React.createElement('i', attrs, iconName);
+    return React.createElement("i", attrs, iconName);
   }
 }

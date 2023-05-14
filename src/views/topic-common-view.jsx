@@ -1,10 +1,10 @@
 // View for editing topic parameters (including 'me' topic).
 
-import React from 'react';
+import React from "react";
 
-import TopicDescEdit from '../widgets/topic-desc-edit.jsx';
+import TopicDescEdit from "../widgets/topic-desc-edit.jsx";
 
-import { arrayEqual } from '../lib/utils.js';
+import { arrayEqual } from "../lib/utils.js";
 
 export default class TopicCommonView extends React.Component {
   constructor(props) {
@@ -13,7 +13,7 @@ export default class TopicCommonView extends React.Component {
     const topic = this.props.tinode.getTopic(this.props.topic);
     const acs = topic.getAccessMode();
     this.state = {
-      tags: []
+      tags: [],
     };
 
     this.previousTagsUpdated = undefined;
@@ -30,7 +30,7 @@ export default class TopicCommonView extends React.Component {
     }
 
     if (topic.onTagsUpdated != this.onTagsUpdated) {
-      if (topic.getType() == 'grp') {
+      if (topic.getType() == "grp") {
         this.previousTagsUpdated = topic.onTagsUpdated;
         topic.onTagsUpdated = this.onTagsUpdated;
       } else {
@@ -39,7 +39,7 @@ export default class TopicCommonView extends React.Component {
     }
 
     if (this.state.topic != props.topic) {
-      this.setState({topic: props.topic});
+      this.setState({ topic: props.topic });
     }
   }
 
@@ -50,9 +50,12 @@ export default class TopicCommonView extends React.Component {
 
   // Server informs that the tags have been updated.
   onTagsUpdated(tags) {
-    this.setState({tags: tags});
+    this.setState({ tags: tags });
 
-    if (this.previousTagsUpdated && this.previousTagsUpdated != this.onTagsUpdated) {
+    if (
+      this.previousTagsUpdated &&
+      this.previousTagsUpdated != this.onTagsUpdated
+    ) {
       this.previousTagsUpdated(tags);
     }
   }
@@ -72,8 +75,9 @@ export default class TopicCommonView extends React.Component {
           topic={this.props.topic}
           onUpdateTopicDesc={this.props.onUpdateTopicDesc}
           onUpdateTags={this.handleTagsUpdated}
-          onError={this.props.onError} />
+          onError={this.props.onError}
+        />
       </div>
     );
   }
-};
+}

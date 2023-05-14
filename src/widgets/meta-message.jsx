@@ -1,6 +1,6 @@
 // Message bubble with non-payload content, such as an indicator of deleted content or a date stamp.
 
-import React from 'react';
+import React from "react";
 
 export default class MetaMessage extends React.PureComponent {
   constructor(props) {
@@ -9,25 +9,23 @@ export default class MetaMessage extends React.PureComponent {
 
   render() {
     let content = null;
-    let bubbleClass = 'bubble';
+    let bubbleClass = "bubble";
     if (this.props.date) {
       // A date badge.
-      content = <>{this.props.date}</>
-      bubbleClass += ' date';
+      content = <>{this.props.date}</>;
+      bubbleClass += " date";
     }
 
     if (!content) {
-      return <>{null}</>
+      return <>{null}</>;
     }
 
     return (
       <li className="meta">
         <div className={bubbleClass}>
-          <div className="message-content">
-            {content}
-          </div>
+          <div className="message-content">{content}</div>
         </div>
       </li>
     );
   }
-};
+}

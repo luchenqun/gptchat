@@ -1,6 +1,6 @@
 // Image zoom and crop widget.
 
-import React from 'react';
+import React from "react";
 
 const DEFAULT_MAX_ZOOM = 2.5;
 
@@ -37,7 +37,7 @@ export default class Cropper extends React.Component {
     this.imageHeight = 0;
 
     // Mouse position when dragging.
-    this.mouseX = 0
+    this.mouseX = 0;
     this.mouseY = 0;
     // Length of the previous mouse move when dragging.
     this.prevDistance = 0;
@@ -61,8 +61,12 @@ export default class Cropper extends React.Component {
   }
 
   componentDidMount() {
-    this.overlay.current.addEventListener('mousedown', this.mouseDown, { passive: true });
-    this.overlay.current.addEventListener('touchstart', this.mouseDown, { passive: true });
+    this.overlay.current.addEventListener("mousedown", this.mouseDown, {
+      passive: true,
+    });
+    this.overlay.current.addEventListener("touchstart", this.mouseDown, {
+      passive: true,
+    });
 
     // The rectangle position is in viewport coordinates.
     this.bBoxRect = this.boundingBox.current.getBoundingClientRect();
@@ -75,8 +79,8 @@ export default class Cropper extends React.Component {
   }
 
   componentWillUnmount() {
-    this.overlay.current.removeEventListener('mousedown', this.mouseDown);
-    this.overlay.current.removeEventListener('touchstart', this.mouseDown);
+    this.overlay.current.removeEventListener("mousedown", this.mouseDown);
+    this.overlay.current.removeEventListener("touchstart", this.mouseDown);
   }
 
   // Position all elements.
@@ -98,12 +102,17 @@ export default class Cropper extends React.Component {
       (top + this.cutoutRect.top - this.bBoxRect.top) / zoom,
       this.cutoutRect.width / zoom,
       this.cutoutRect.height / zoom,
-      zoom);
+      zoom
+    );
   }
 
   // Check if new location is within the limits.
   static checkBound(currPan, img, cutout, delta) {
-    let nextDiff = Math.min(0, cutout[0] - img[0] - delta, img[1] - cutout[1] + delta);
+    let nextDiff = Math.min(
+      0,
+      cutout[0] - img[0] - delta,
+      img[1] - cutout[1] + delta
+    );
     if (nextDiff == 0) {
       // Cutout is completely within the image.
       currPan += delta;
@@ -122,18 +131,28 @@ export default class Cropper extends React.Component {
     this.imageHeight = imgRect.height;
 
     // Set zoom slider's min and max values. Make sure the scaled image cannot be smaller than the cutout.
-    const minZoom = Math.max(this.cutoutRect.width / imgRect.width, this.cutoutRect.height / imgRect.height);
+    const minZoom = Math.max(
+      this.cutoutRect.width / imgRect.width,
+      this.cutoutRect.height / imgRect.height
+    );
     this.setState({
       minZoom: minZoom,
-      maxZoom: Math.max(DEFAULT_MAX_ZOOM, minZoom + 1)
+      maxZoom: Math.max(DEFAULT_MAX_ZOOM, minZoom + 1),
     });
 
     // Initial zoom level fills the bounding box at the smallest image dimension and overflows the largest, i.e. "fill" not "fit".
-    const zoom = Math.max(this.bBoxRect.width / imgRect.width, this.bBoxRect.height / imgRect.height);
+    const zoom = Math.max(
+      this.bBoxRect.width / imgRect.width,
+      this.bBoxRect.height / imgRect.height
+    );
     // Converting from viewport coordinates to container, then panning.
-    const panX = this.cutoutRect.left - this.bBoxRect.left -
+    const panX =
+      this.cutoutRect.left -
+      this.bBoxRect.left -
       (imgRect.width - this.cutoutRect.width) / 2;
-    const panY = this.cutoutRect.top - this.bBoxRect.top -
+    const panY =
+      this.cutoutRect.top -
+      this.bBoxRect.top -
       (imgRect.height - this.cutoutRect.height) / 2;
 
     this.positionAll(panX, panY, zoom);
@@ -181,12 +200,12 @@ export default class Cropper extends React.Component {
       this.mouseY = e.pageY;
     }
 
-    window.addEventListener('mousemove', this.mouseMove, { passive: false });
-    window.addEventListener('touchmove', this.mouseTouch, { passive: false });
-    window.addEventListener('mouseup', this.mouseUp, { passive: true });
-    window.addEventListener('touchend', this.mouseUp, { passive: true });
+    window.addEventListener("mousemove", this.mouseMove, { passive: false });
+    window.addEventListener("touchmove", this.mouseTouch, { passive: false });
+    window.addEventListener("mouseup", this.mouseUp, { passive: true });
+    window.addEventListener("touchend", this.mouseUp, { passive: true });
     // Disable text selection in the entire document.
-    document.body.style['userSelect'] = 'none';
+    document.body.style["userSelect"] = "none";
   }
 
   // Perform image panning.
@@ -201,10 +220,18 @@ export default class Cropper extends React.Component {
     const imgRect = this.preview.current.getBoundingClientRect();
 
     // Check if the new position is within the boundaries, and if not if it's closer to them.
-    let panX = Cropper.checkBound(this.state.panX, [imgRect.left, imgRect.right],
-      [this.cutoutRect.left, this.cutoutRect.right], dX);
-    let panY = Cropper.checkBound(this.state.panY, [imgRect.top, imgRect.bottom],
-      [this.cutoutRect.top, this.cutoutRect.bottom], dY);
+    let panX = Cropper.checkBound(
+      this.state.panX,
+      [imgRect.left, imgRect.right],
+      [this.cutoutRect.left, this.cutoutRect.right],
+      dX
+    );
+    let panY = Cropper.checkBound(
+      this.state.panY,
+      [imgRect.top, imgRect.bottom],
+      [this.cutoutRect.top, this.cutoutRect.bottom],
+      dY
+    );
 
     this.positionAll(panX, panY, this.state.zoom);
   }
@@ -225,24 +252,26 @@ export default class Cropper extends React.Component {
 
     // Image zooming by pinching.
     const [touch0, touch1] = e.touches;
-    const distance = Math.sqrt((touch0.pageX - touch1.pageX) * (touch0.pageX - touch1.pageX) +
-      (touch0.pageY - touch1.pageY) * (touch0.pageY - touch1.pageY));
+    const distance = Math.sqrt(
+      (touch0.pageX - touch1.pageX) * (touch0.pageX - touch1.pageX) +
+        (touch0.pageY - touch1.pageY) * (touch0.pageY - touch1.pageY)
+    );
 
     if (!this.prevDistance) {
-        this.prevDistance = distance / this.state.zoom;
+      this.prevDistance = distance / this.state.zoom;
     }
 
-    let scale = (distance / this.prevDistance);
+    let scale = distance / this.prevDistance;
     this.handleZoom(Math.max(this.minZoom, Math.min(this.maxZoom, scale)));
   }
 
   mouseUp(e) {
-    window.removeEventListener('mousemove', this.mouseMove);
-    window.removeEventListener('touchmove', this.mouseTouch);
-    window.removeEventListener('mouseup', this.mouseUp);
-    window.removeEventListener('touchend', this.mouseUp);
+    window.removeEventListener("mousemove", this.mouseMove);
+    window.removeEventListener("touchmove", this.mouseTouch);
+    window.removeEventListener("mouseup", this.mouseUp);
+    window.removeEventListener("touchend", this.mouseUp);
     // Re-enable text selection.
-    document.body.style['userSelect'] = '';
+    document.body.style["userSelect"] = "";
 
     this.positionAll(this.state.panX, this.state.panY, this.state.zoom);
   }
@@ -259,19 +288,32 @@ export default class Cropper extends React.Component {
       top: `${this.originY - this.state.originY * this.state.zoom}px`,
       left: `${this.originX - this.state.originX * this.state.zoom}px`,
       width: `${this.imageWidth * this.state.zoom}px`,
-      height: `${this.imageHeight * this.state.zoom}px`
+      height: `${this.imageHeight * this.state.zoom}px`,
     };
     return (
       <div className="cropper">
         <div className="bounding-box" ref={this.boundingBox}>
-          <img src={this.props.source} className="preview" alt=""
-            style={{transform: t3d, transformOrigin: orig}} ref={this.preview} onLoad={this.initScaling} />
+          <img
+            src={this.props.source}
+            className="preview"
+            alt=""
+            style={{ transform: t3d, transformOrigin: orig }}
+            ref={this.preview}
+            onLoad={this.initScaling}
+          />
           <div className="cutout circle" ref={this.cutout} />
           <div className="overlay" style={overlay} ref={this.overlay} />
         </div>
         <div className="zoom-wrapper">
-          <input type="range" className="zoomer"
-            step="0.001" min={this.state.minZoom} max={this.state.maxZoom} value={this.state.zoom} onChange={this.onZoom} />
+          <input
+            type="range"
+            className="zoomer"
+            step="0.001"
+            min={this.state.minZoom}
+            max={this.state.maxZoom}
+            value={this.state.zoom}
+            onChange={this.onZoom}
+          />
         </div>
       </div>
     );

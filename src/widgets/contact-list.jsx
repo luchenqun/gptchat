@@ -1,28 +1,28 @@
 // ContactList: component for showing a list of contacts,
 // such as a list of group members in a group chat.
-import React from 'react';
-import { defineMessages, injectIntl } from 'react-intl';
+import React from "react";
+import { defineMessages, injectIntl } from "react-intl";
 
-import { Drafty, Tinode } from 'tinode-sdk';
+import { Drafty, Tinode } from "tinode-sdk";
 
-import Contact from './contact.jsx';
-import ContactAction from './contact-action.jsx';
+import Contact from "./contact.jsx";
+import ContactAction from "./contact-action.jsx";
 
-import { makeImageUrl } from '../lib/blob-helpers.js';
+import { makeImageUrl } from "../lib/blob-helpers.js";
 
-import { MESSAGE_PREVIEW_LENGTH } from '../config.js';
+import { MESSAGE_PREVIEW_LENGTH } from "../config.js";
 
 const messages = defineMessages({
   badge_you: {
-    id: 'badge_you',
-    defaultMessage: 'you',
-    description: 'Badge for indicating the current user'
+    id: "badge_you",
+    defaultMessage: "you",
+    description: "Badge for indicating the current user",
   },
   badge_owner: {
-    id: 'badge_owner',
-    defaultMessage: 'owner',
-    description: 'Badge for indicating the owner'
-  }
+    id: "badge_owner",
+    defaultMessage: "owner",
+    description: "Badge for indicating the owner",
+  },
 });
 
 class ContactList extends React.Component {
@@ -37,22 +37,25 @@ class ContactList extends React.Component {
           // Action item
           contactNodes.push(
             <ContactAction
-              title={c.title} action={c.action} values={c.values}
+              title={c.title}
+              action={c.action}
+              values={c.values}
               key={c.action}
               onAction={this.props.onAction}
-              />);
+            />
+          );
         } else {
           // Normal contact
-          const key = this.props.showMode ? c.user : (c.topic || c.user);
+          const key = this.props.showMode ? c.user : c.topic || c.user;
           // If filter function is provided, filter out the items
           // which don't satisfy the condition.
           if (this.props.filterFunc && this.props.filter) {
             const filterOn = [key];
             if (c.private && c.private.comment) {
-              filterOn.push(('' + c.private.comment).toLowerCase());
+              filterOn.push(("" + c.private.comment).toLowerCase());
             }
             if (c.public && c.public.fn) {
-              filterOn.push(('' + c.public.fn).toLowerCase());
+              filterOn.push(("" + c.public.fn).toLowerCase());
             }
             if (!this.props.filterFunc(this.props.filter, filterOn)) {
               return;
@@ -61,21 +64,30 @@ class ContactList extends React.Component {
 
           const isChannel = Tinode.isChannelTopicName(key);
           const isGroup = !isChannel && Tinode.isGroupTopicName(key);
-          const selected = showCheckmark ?
-            (this.props.topicSelected.indexOf(key) > -1) :
-            (this.props.topicSelected === key);
+          const selected = showCheckmark
+            ? this.props.topicSelected.indexOf(key) > -1
+            : this.props.topicSelected === key;
           const badges = [];
           if (this.props.showMode) {
             if (key == this.props.myUserId) {
-              badges.push({name: formatMessage(messages.badge_you), color: 'green'});
+              badges.push({
+                name: formatMessage(messages.badge_you),
+                color: "green",
+              });
             }
             if (c.acs && c.acs.isOwner()) {
-              badges.push({name: formatMessage(messages.badge_owner), color: 'blue'});
+              badges.push({
+                name: formatMessage(messages.badge_owner),
+                color: "blue",
+              });
             }
           }
 
-          const comment = Array.isArray(c.private) ?
-            c.private.join(',') : (c.private ? c.private.comment : null);
+          const comment = Array.isArray(c.private)
+            ? c.private.join(",")
+            : c.private
+            ? c.private.comment
+            : null;
           let preview;
           let forwarded;
           let previewIsResponse;
@@ -87,9 +99,10 @@ class ContactList extends React.Component {
               deliveryStatus = msg._status || c.msgStatus(msg, true);
               previewIsResponse = msg.from != this.props.myUserId;
               if (msg.content) {
-                preview = typeof msg.content == 'string' ?
-                  msg.content.substr(0, MESSAGE_PREVIEW_LENGTH) :
-                  Drafty.preview(msg.content, MESSAGE_PREVIEW_LENGTH);
+                preview =
+                  typeof msg.content == "string"
+                    ? msg.content.substr(0, MESSAGE_PREVIEW_LENGTH)
+                    : Drafty.preview(msg.content, MESSAGE_PREVIEW_LENGTH);
               }
             }
           }
@@ -122,31 +135,28 @@ class ContactList extends React.Component {
               onSelected={this.props.onTopicSelected}
               item={key}
               index={contactNodes.length}
-              key={key} />
+              key={key}
+            />
           );
-          contactsCount ++;
+          contactsCount++;
         }
       }, this);
     }
 
     return (
       <div className={this.props.noScroll ? null : "scrollable-panel"}>
-        {contactsCount == 0 ?
-          <div className="center-medium-text"
-            dangerouslySetInnerHTML={{__html: this.props.emptyListMessage}} />
-          :
-          null
-        }
-        {contactNodes.length > 0 ?
-          <ul className="contact-box">
-            {contactNodes}
-          </ul>
-          :
-          null
-        }
+        {contactsCount == 0 ? (
+          <div
+            className="center-medium-text"
+            dangerouslySetInnerHTML={{ __html: this.props.emptyListMessage }}
+          />
+        ) : null}
+        {contactNodes.length > 0 ? (
+          <ul className="contact-box">{contactNodes}</ul>
+        ) : null}
       </div>
     );
   }
-};
+}
 
 export default injectIntl(ContactList);

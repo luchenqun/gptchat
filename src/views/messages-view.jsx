@@ -1,32 +1,55 @@
 // Panel with a chat.
 
-import React from 'react';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import React from "react";
+import { FormattedMessage, defineMessages, injectIntl } from "react-intl";
 
-import { Drafty, Tinode } from 'tinode-sdk';
+import { Drafty, Tinode } from "tinode-sdk";
 
-import CallPanel from '../widgets/call-panel.jsx';
-import ChatMessage from '../widgets/chat-message.jsx';
-import ContactBadges from '../widgets/contact-badges.jsx';
-import DocPreview from '../widgets/doc-preview.jsx';
-import ErrorPanel from '../widgets/error-panel.jsx';
-import GroupSubs from '../widgets/group-subs.jsx';
-import ImagePreview from '../widgets/image-preview.jsx';
-import Invitation from '../widgets/invitation.jsx';
-import LetterTile from '../widgets/letter-tile.jsx';
-import LoadSpinner from '../widgets/load-spinner.jsx';
-import LogoView from './logo-view.jsx';
-import MetaMessage from '../widgets/meta-message.jsx';
-import SendMessage from '../widgets/send-message.jsx';
-import VideoPreview from '../widgets/video-preview.jsx';
+import CallPanel from "../widgets/call-panel.jsx";
+import ChatMessage from "../widgets/chat-message.jsx";
+import ContactBadges from "../widgets/contact-badges.jsx";
+import DocPreview from "../widgets/doc-preview.jsx";
+import ErrorPanel from "../widgets/error-panel.jsx";
+import GroupSubs from "../widgets/group-subs.jsx";
+import ImagePreview from "../widgets/image-preview.jsx";
+import Invitation from "../widgets/invitation.jsx";
+import LetterTile from "../widgets/letter-tile.jsx";
+import LoadSpinner from "../widgets/load-spinner.jsx";
+import LogoView from "./logo-view.jsx";
+import MetaMessage from "../widgets/meta-message.jsx";
+import SendMessage from "../widgets/send-message.jsx";
+import VideoPreview from "../widgets/video-preview.jsx";
 
-import { DEFAULT_P2P_ACCESS_MODE, EDIT_PREVIEW_LENGTH, IMAGE_PREVIEW_DIM, IMMEDIATE_P2P_SUBSCRIPTION,
-  KEYPRESS_DELAY, MESSAGES_PAGE, MAX_EXTERN_ATTACHMENT_SIZE, MAX_IMAGE_DIM, MAX_INBAND_ATTACHMENT_SIZE,
-  READ_DELAY, QUOTED_REPLY_LENGTH, VIDEO_PREVIEW_DIM } from '../config.js';
-import { CALL_STATE_OUTGOING_INITATED, CALL_STATE_IN_PROGRESS } from '../constants.js';
-import { blobToBase64, fileToBase64, imageScaled, makeImageUrl } from '../lib/blob-helpers.js';
-import HashNavigation from '../lib/navigation.js';
-import { bytesToHumanSize, relativeDateFormat, shortDateFormat } from '../lib/strformat.js';
+import {
+  DEFAULT_P2P_ACCESS_MODE,
+  EDIT_PREVIEW_LENGTH,
+  IMAGE_PREVIEW_DIM,
+  IMMEDIATE_P2P_SUBSCRIPTION,
+  KEYPRESS_DELAY,
+  MESSAGES_PAGE,
+  MAX_EXTERN_ATTACHMENT_SIZE,
+  MAX_IMAGE_DIM,
+  MAX_INBAND_ATTACHMENT_SIZE,
+  READ_DELAY,
+  QUOTED_REPLY_LENGTH,
+  VIDEO_PREVIEW_DIM,
+} from "../config.js";
+import {
+  CALL_STATE_OUTGOING_INITATED,
+  CALL_STATE_IN_PROGRESS,
+} from "../constants.js";
+import {
+  blobToBase64,
+  fileToBase64,
+  imageScaled,
+  makeImageUrl,
+} from "../lib/blob-helpers.js";
+import HashNavigation from "../lib/navigation.js";
+import {
+  bytesToHumanSize,
+  relativeDateFormat,
+  shortDateFormat,
+} from "../lib/strformat.js";
 
 // Run timer with this frequency (ms) for checking notification queue.
 const NOTIFICATION_EXEC_INTERVAL = 300;
@@ -37,60 +60,62 @@ const FETCH_PAGE_TRIGGER = 40;
 
 const messages = defineMessages({
   online_now: {
-    id: 'online_now',
-    defaultMessage: 'online now',
-    description: 'Indicator that the user or topic is currently online',
+    id: "online_now",
+    defaultMessage: "online now",
+    description: "Indicator that the user or topic is currently online",
   },
   last_seen: {
-    id: 'last_seen_timestamp',
-    defaultMessage: 'Last seen',
-    description: 'Label for the timestamp of when the user or topic was last online'
+    id: "last_seen_timestamp",
+    defaultMessage: "Last seen",
+    description:
+      "Label for the timestamp of when the user or topic was last online",
   },
   not_found: {
-    id: 'title_not_found',
-    defaultMessage: 'Not found',
-    description: 'Title shown when topic is not found'
+    id: "title_not_found",
+    defaultMessage: "Not found",
+    description: "Title shown when topic is not found",
   },
   channel: {
-    id: 'channel',
-    defaultMessage: 'channel',
-    description: 'Subtitle shown for channels in MessagesView instead of last seen'
+    id: "channel",
+    defaultMessage: "channel",
+    description:
+      "Subtitle shown for channels in MessagesView instead of last seen",
   },
   file_attachment_too_large: {
-    id: 'file_attachment_too_large',
-    defaultMessage: 'The file size {size} exceeds the {limit} limit.',
-    description: 'Error message when attachment is too large'
+    id: "file_attachment_too_large",
+    defaultMessage: "The file size {size} exceeds the {limit} limit.",
+    description: "Error message when attachment is too large",
   },
   invalid_content: {
-    id: 'invalid_content',
-    defaultMessage: 'invalid content',
-    description: 'Shown when the message is unreadable'
+    id: "invalid_content",
+    defaultMessage: "invalid content",
+    description: "Shown when the message is unreadable",
   },
   editing_message: {
-    id: 'editing_message',
-    defaultMessage: 'Editing',
-    description: 'Title over message editing preview'
+    id: "editing_message",
+    defaultMessage: "Editing",
+    description: "Title over message editing preview",
   },
   drag_file: {
-    id: 'drag_file',
-    defaultMessage: 'Drag file here',
-    description: 'Prompt on the file drag-n-drop overlay banner'
-  }
+    id: "drag_file",
+    defaultMessage: "Drag file here",
+    description: "Prompt on the file drag-n-drop overlay banner",
+  },
 });
 
 // Checks if the access permissions are granted but not yet accepted.
 function isUnconfirmed(acs) {
   if (acs) {
-    const ex = acs.getExcessive() || '';
-    return acs.isJoiner('given') && (ex.includes('R') || ex.includes('W'));
+    const ex = acs.getExcessive() || "";
+    return acs.isJoiner("given") && (ex.includes("R") || ex.includes("W"));
   }
   return false;
 }
 
 function isPeerRestricted(acs) {
   if (acs) {
-    const ms = acs.getMissing() || '';
-    return acs.isJoiner('want') && (ms.includes('R') || ms.includes('W'));
+    const ms = acs.getMissing() || "";
+    return acs.isJoiner("want") && (ms.includes("R") || ms.includes("W"));
   }
   return false;
 }
@@ -99,7 +124,10 @@ function shouldPresentCallPanel(callState) {
   // Show call panel if either:
   // - call is outgoing (and the client is waiting for the other side to pick up) or,
   // - call is already in progress.
-  return callState == CALL_STATE_OUTGOING_INITATED || callState == CALL_STATE_IN_PROGRESS;
+  return (
+    callState == CALL_STATE_OUTGOING_INITATED ||
+    callState == CALL_STATE_IN_PROGRESS
+  );
 }
 
 class MessagesView extends React.Component {
@@ -130,7 +158,8 @@ class MessagesView extends React.Component {
     this.handleClosePreview = this.handleClosePreview.bind(this);
     this.handleFormResponse = this.handleFormResponse.bind(this);
     this.handleContextClick = this.handleContextClick.bind(this);
-    this.handleShowMessageContextMenu = this.handleShowMessageContextMenu.bind(this);
+    this.handleShowMessageContextMenu =
+      this.handleShowMessageContextMenu.bind(this);
     this.handleNewChatAcceptance = this.handleNewChatAcceptance.bind(this);
     this.handleEnablePeer = this.handleEnablePeer.bind(this);
     this.handleAttachFile = this.handleAttachFile.bind(this);
@@ -181,7 +210,7 @@ class MessagesView extends React.Component {
 
   componentDidMount() {
     if (this.messagesScroller) {
-      this.messagesScroller.addEventListener('scroll', this.handleScrollEvent);
+      this.messagesScroller.addEventListener("scroll", this.handleScrollEvent);
     }
 
     // Drag and drop events
@@ -192,7 +221,10 @@ class MessagesView extends React.Component {
 
   componentWillUnmount() {
     if (this.messagesScroller) {
-      this.messagesScroller.removeEventListener('scroll', this.handleScrollEvent);
+      this.messagesScroller.removeEventListener(
+        "scroll",
+        this.handleScrollEvent
+      );
     }
 
     // Flush all notifications.
@@ -200,24 +232,29 @@ class MessagesView extends React.Component {
 
     // Drag and drop events
     if (this.dndRef) {
-      this.dndRef.removeEventListener('dragstart', this.handleDragStart);
-      this.dndRef.removeEventListener('dragenter', this.handleDragIn);
-      this.dndRef.removeEventListener('dragleave', this.handleDragOut);
-      this.dndRef.removeEventListener('dragover', this.handleDrag);
-      this.dndRef.removeEventListener('drop', this.handleDrop);
+      this.dndRef.removeEventListener("dragstart", this.handleDragStart);
+      this.dndRef.removeEventListener("dragenter", this.handleDragIn);
+      this.dndRef.removeEventListener("dragleave", this.handleDragOut);
+      this.dndRef.removeEventListener("dragover", this.handleDrag);
+      this.dndRef.removeEventListener("drop", this.handleDrop);
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
     // Scroll last message into view on component update e.g. on message received
     // or vertical shrinking.
-    if (this.messagesScroller &&
-      (prevState.topic != this.state.topic || prevState.maxSeqId != this.state.maxSeqId ||
-        prevState.minSeqId != this.state.minSeqId)) {
+    if (
+      this.messagesScroller &&
+      (prevState.topic != this.state.topic ||
+        prevState.maxSeqId != this.state.maxSeqId ||
+        prevState.minSeqId != this.state.minSeqId)
+    ) {
       // New message.
       if (this.state.scrollPosition < SHOW_GO_TO_LAST_DIST) {
-        this.messagesScroller.scrollTop = this.messagesScroller.scrollHeight -
-          this.state.scrollPosition - this.messagesScroller.offsetHeight;
+        this.messagesScroller.scrollTop =
+          this.messagesScroller.scrollHeight -
+          this.state.scrollPosition -
+          this.messagesScroller.offsetHeight;
       }
     }
 
@@ -233,7 +270,9 @@ class MessagesView extends React.Component {
   }
 
   componentSetup(prevProps, prevState) {
-    const topic = this.props.tinode ? this.props.tinode.getTopic(this.state.topic) : undefined;
+    const topic = this.props.tinode
+      ? this.props.tinode.getTopic(this.state.topic)
+      : undefined;
     if (this.state.topic != prevState.topic) {
       if (prevState.topic && !Tinode.isNewGroupTopicName(prevState.topic)) {
         this.leave(prevState.topic);
@@ -253,15 +292,24 @@ class MessagesView extends React.Component {
     }
 
     if (topic) {
-      if ((this.state.topic != prevState.topic) || (this.props.myUserId && !prevProps.myUserId)) {
+      if (
+        this.state.topic != prevState.topic ||
+        (this.props.myUserId && !prevProps.myUserId)
+      ) {
         // Don't immediately subscribe to a new p2p topic, wait for the first message.
-        const newTopic = (this.props.newTopicParams && this.props.newTopicParams._topicName == this.props.topic);
+        const newTopic =
+          this.props.newTopicParams &&
+          this.props.newTopicParams._topicName == this.props.topic;
         if (topic.isP2PType() && newTopic && !IMMEDIATE_P2P_SUBSCRIPTION) {
           topic.getMeta(topic.startMetaQuery().withDesc().build());
         } else if (this.props.myUserId) {
           this.subscribe(topic);
         }
-      } else if (topic.isSubscribed() && this.state.isReader && !prevState.isReader) {
+      } else if (
+        topic.isSubscribed() &&
+        this.state.isReader &&
+        !prevState.isReader
+      ) {
         // If reader status has changed and data became available.
         topic.getMeta(topic.startMetaQuery().withLaterData().build());
       }
@@ -278,7 +326,7 @@ class MessagesView extends React.Component {
         latestClearId: -1,
         onlineSubs: [],
         topic: null,
-        title: '',
+        title: "",
         avatar: null,
         isVerified: false,
         isStaff: false,
@@ -298,7 +346,7 @@ class MessagesView extends React.Component {
         reply: null,
         contentToEdit: null,
         showGoToLastButton: false,
-        dragging: false
+        dragging: false,
       };
     } else if (nextProps.topic != prevState.topic) {
       const topic = nextProps.tinode.getTopic(nextProps.topic);
@@ -317,14 +365,14 @@ class MessagesView extends React.Component {
         fetchingMessages: false,
         showGoToLastButton: false,
         contentToEdit: null,
-        dragging: false
+        dragging: false,
       };
 
       if (nextProps.forwardMessage) {
         // We are forwarding a message. Show preview.
         nextState.reply = {
           content: nextProps.forwardMessage.preview,
-          seq: null
+          seq: null,
         };
       } else {
         nextState.reply = null;
@@ -343,39 +391,42 @@ class MessagesView extends React.Component {
         }
 
         Object.assign(nextState, {
-          onlineSubs: subs
+          onlineSubs: subs,
         });
 
         if (topic.public) {
           Object.assign(nextState, {
             title: topic.public.fn,
-            avatar: makeImageUrl(topic.public.photo)
+            avatar: makeImageUrl(topic.public.photo),
           });
         } else {
           Object.assign(nextState, {
-            title: '',
-            avatar: null
+            title: "",
+            avatar: null,
           });
         }
 
         const peer = topic.p2pPeerDesc();
         if (peer) {
           Object.assign(nextState, {
-            peerMessagingDisabled: isPeerRestricted(peer.acs)
+            peerMessagingDisabled: isPeerRestricted(peer.acs),
           });
         } else if (prevState.peerMessagingDisabled) {
           Object.assign(nextState, {
-            peerMessagingDisabled: false
+            peerMessagingDisabled: false,
           });
         }
         Object.assign(nextState, {
           minSeqId: topic.minMsgSeq(),
           maxSeqId: topic.maxMsgSeq(),
           latestClearId: topic.maxClearId(),
-          channel: topic.isChannelType()
+          channel: topic.isChannelType(),
         });
 
-        if (nextProps.callTopic == topic.name && shouldPresentCallPanel(nextProps.callState)) {
+        if (
+          nextProps.callTopic == topic.name &&
+          shouldPresentCallPanel(nextProps.callState)
+        ) {
           nextState.rtcPanel = nextProps.callTopic;
         }
       } else {
@@ -385,16 +436,19 @@ class MessagesView extends React.Component {
           maxSeqId: -1,
           latestClearId: -1,
           onlineSubs: [],
-          title: '',
+          title: "",
           avatar: null,
           peerMessagingDisabled: false,
-          channel: false
+          channel: false,
         });
       }
     } else {
       // We are still in same topic. Show the call panel if necessary.
-      if (nextProps.callTopic == prevState.topic && !prevState.rtcPanel &&
-          shouldPresentCallPanel(nextProps.callState)) {
+      if (
+        nextProps.callTopic == prevState.topic &&
+        !prevState.rtcPanel &&
+        shouldPresentCallPanel(nextProps.callState)
+      ) {
         nextState.rtcPanel = nextProps.callTopic;
       }
     }
@@ -406,7 +460,7 @@ class MessagesView extends React.Component {
       if (nextProps.acs.isReader() != prevState.isReader) {
         nextState.isReader = !prevState.isReader;
       }
-      if (!nextProps.acs.isReader('given') != prevState.readingBlocked) {
+      if (!nextProps.acs.isReader("given") != prevState.readingBlocked) {
         nextState.readingBlocked = !prevState.readingBlocked;
       }
       if (nextProps.acs.isSharer() != prevState.isSharer) {
@@ -432,7 +486,11 @@ class MessagesView extends React.Component {
     }
 
     // Clear subscribers online when there is no connection.
-    if (!nextProps.connected && prevState.onlineSubs && prevState.onlineSubs.length > 0) {
+    if (
+      !nextProps.connected &&
+      prevState.onlineSubs &&
+      prevState.onlineSubs.length > 0
+    ) {
       nextState.onlineSubs = [];
     }
 
@@ -445,7 +503,9 @@ class MessagesView extends React.Component {
     }
 
     // Is this a new topic?
-    const newTopic = (this.props.newTopicParams && this.props.newTopicParams._topicName == this.props.topic);
+    const newTopic =
+      this.props.newTopicParams &&
+      this.props.newTopicParams._topicName == this.props.topic;
 
     // Don't request the tags. They are useless unless the user
     // is the owner and is editing the topic.
@@ -461,21 +521,24 @@ class MessagesView extends React.Component {
     }
 
     const setQuery = newTopic ? this.props.newTopicParams : undefined;
-    topic.subscribe(getQuery.build(), setQuery)
-      .then(ctrl => {
+    topic
+      .subscribe(getQuery.build(), setQuery)
+      .then((ctrl) => {
         if (ctrl.code == 303) {
           // Redirect to another topic requested.
-          HashNavigation.navigateTo(HashNavigation.setUrlTopic('', ctrl.params.topic));
+          HashNavigation.navigateTo(
+            HashNavigation.setUrlTopic("", ctrl.params.topic)
+          );
           return;
         }
         if (this.state.topic != ctrl.topic) {
-          this.setState({topic: ctrl.topic});
+          this.setState({ topic: ctrl.topic });
         }
         this.props.onNewTopicCreated(this.props.topic, ctrl.topic);
         // If there are unsent messages (except hard-failed and video call messages),
         // try sending them now. Hard-failed and unsent video call messages will be dropped.
         let discard = [];
-        topic.queuedMessages(pub => {
+        topic.queuedMessages((pub) => {
           if (pub._sending) {
             return;
           }
@@ -492,9 +555,9 @@ class MessagesView extends React.Component {
           topic.delMessagesList(discard, true);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Failed subscription to", this.state.topic, err);
-        this.props.onError(err.message, 'err');
+        this.props.onError(err.message, "err");
         const blankState = MessagesView.getDerivedStateFromProps({}, {});
         blankState.title = this.props.intl.formatMessage(messages.not_found);
         this.setState(blankState);
@@ -508,12 +571,15 @@ class MessagesView extends React.Component {
 
     const oldTopic = this.props.tinode.getTopic(oldTopicName);
     if (oldTopic && oldTopic.isSubscribed()) {
-      oldTopic.leave(false)
-        .catch(_ => { /* do nothing here */ })
-        .finally(_ => {
+      oldTopic
+        .leave(false)
+        .catch((_) => {
+          /* do nothing here */
+        })
+        .finally((_) => {
           // We don't care if the request succeeded or failed.
           // The topic is dead regardless.
-          this.setState({fetchingMessages: false});
+          this.setState({ fetchingMessages: false });
           oldTopic.onData = undefined;
           oldTopic.onAllMessagesReceived = undefined;
           oldTopic.onInfo = undefined;
@@ -527,20 +593,26 @@ class MessagesView extends React.Component {
   // Don't use React.createRef as the ref.current is not available in componentDidMount in this component.
   handleScrollReference(node) {
     if (node) {
-      node.addEventListener('scroll', this.handleScrollEvent);
+      node.addEventListener("scroll", this.handleScrollEvent);
       this.messagesScroller = node;
-      this.messagesScroller.scrollTop = this.messagesScroller.scrollHeight -
-        this.state.scrollPosition - this.messagesScroller.offsetHeight;
+      this.messagesScroller.scrollTop =
+        this.messagesScroller.scrollHeight -
+        this.state.scrollPosition -
+        this.messagesScroller.offsetHeight;
     }
   }
 
   // Get older messages and show/hide [go to latest message] button.
   handleScrollEvent(event) {
-    const pos = event.target.scrollHeight - event.target.scrollTop - event.target.offsetHeight;
+    const pos =
+      event.target.scrollHeight -
+      event.target.scrollTop -
+      event.target.offsetHeight;
     this.setState({
       scrollPosition: pos,
       // Show [go to latest message] if far enough from bottom and scrolling down.
-      showGoToLastButton: (pos > SHOW_GO_TO_LAST_DIST) && (pos < this.state.scrollPosition),
+      showGoToLastButton:
+        pos > SHOW_GO_TO_LAST_DIST && pos < this.state.scrollPosition,
     });
 
     if (this.state.fetchingMessages) {
@@ -550,11 +622,12 @@ class MessagesView extends React.Component {
     if (event.target.scrollTop <= FETCH_PAGE_TRIGGER) {
       const topic = this.props.tinode.getTopic(this.state.topic);
       if (topic && topic.isSubscribed() && topic.msgHasMoreMessages()) {
-        this.setState({fetchingMessages: true}, _ => {
-          topic.getMessagesPage(MESSAGES_PAGE)
-            .catch(err => this.props.onError(err.message, 'err'))
-            .finally(_ => this.setState({fetchingMessages: false}));
-          });
+        this.setState({ fetchingMessages: true }, (_) => {
+          topic
+            .getMessagesPage(MESSAGES_PAGE)
+            .catch((err) => this.props.onError(err.message, "err"))
+            .finally((_) => this.setState({ fetchingMessages: false }));
+        });
       }
     }
   }
@@ -562,19 +635,20 @@ class MessagesView extends React.Component {
   /* Mount drag and drop events */
   mountDnDEvents(dnd) {
     if (dnd) {
-      dnd.addEventListener('dragstart', this.handleDragStart);
-      dnd.addEventListener('dragenter', this.handleDragIn);
-      dnd.addEventListener('dragleave', this.handleDragOut);
-      dnd.addEventListener('dragover', this.handleDrag);
-      dnd.addEventListener('drop', this.handleDrop);
+      dnd.addEventListener("dragstart", this.handleDragStart);
+      dnd.addEventListener("dragenter", this.handleDragIn);
+      dnd.addEventListener("dragleave", this.handleDragOut);
+      dnd.addEventListener("dragover", this.handleDrag);
+      dnd.addEventListener("drop", this.handleDrop);
       this.dndRef = dnd;
     }
   }
 
   goToLatestMessage() {
-    this.setState({scrollPosition: 0});
+    this.setState({ scrollPosition: 0 });
     if (this.messagesScroller) {
-      this.messagesScroller.scrollTop = this.messagesScroller.scrollHeight - this.messagesScroller.offsetHeight;
+      this.messagesScroller.scrollTop =
+        this.messagesScroller.scrollHeight - this.messagesScroller.offsetHeight;
     }
   }
 
@@ -582,12 +656,12 @@ class MessagesView extends React.Component {
     if (desc.public) {
       this.setState({
         title: desc.public.fn,
-        avatar: makeImageUrl(desc.public.photo)
+        avatar: makeImageUrl(desc.public.photo),
       });
     } else {
       this.setState({
-        title: '',
-        avatar: null
+        title: "",
+        avatar: null,
       });
     }
 
@@ -595,7 +669,7 @@ class MessagesView extends React.Component {
       this.setState({
         isWriter: desc.acs.isWriter(),
         isReader: desc.acs.isReader(),
-        readingBlocked: !desc.acs.isReader('given'),
+        readingBlocked: !desc.acs.isReader("given"),
         unconfirmed: isUnconfirmed(desc.acs),
       });
     }
@@ -609,7 +683,7 @@ class MessagesView extends React.Component {
 
     // Set up the timer if it's not running already.
     if (!this.readNotificationTimer) {
-      this.readNotificationTimer = setInterval(_ => {
+      this.readNotificationTimer = setInterval((_) => {
         if (this.readNotificationQueue.length == 0) {
           // Shut down the timer if the queue is empty.
           clearInterval(this.readNotificationTimer);
@@ -650,7 +724,7 @@ class MessagesView extends React.Component {
     this.readNotificationQueue.push({
       topicName: this.state.topic,
       seq: seq,
-      sendAt: now.setMilliseconds(now.getMilliseconds() + READ_DELAY)
+      sendAt: now.setMilliseconds(now.getMilliseconds() + READ_DELAY),
     });
   }
 
@@ -672,15 +746,15 @@ class MessagesView extends React.Component {
           subs.push(sub);
         }
       });
-      const newState = {onlineSubs: subs};
+      const newState = { onlineSubs: subs };
       const peer = topic.p2pPeerDesc();
       if (peer) {
         Object.assign(newState, {
-          peerMessagingDisabled: isPeerRestricted(peer.acs)
+          peerMessagingDisabled: isPeerRestricted(peer.acs),
         });
       } else if (this.state.peerMessagingDisabled) {
         Object.assign(newState, {
-          peerMessagingDisabled: false
+          peerMessagingDisabled: false,
         });
       }
       this.setState(newState);
@@ -696,39 +770,51 @@ class MessagesView extends React.Component {
     if (!msg) {
       // msg could be null if one or more messages were deleted.
       // Updating state to force redraw.
-      this.setState({latestClearId: topic.maxClearId()});
+      this.setState({ latestClearId: topic.maxClearId() });
       return;
     }
 
-    clearTimeout(this.keyPressTimer)
-    this.setState({maxSeqId: topic.maxMsgSeq(), minSeqId: topic.minMsgSeq(), typingIndicator: false}, _ => {
-      // Scroll to the bottom if the message is added to the end of the message
-      // list if already at the bottom, otherwise show [go to latest] button.
-      // Implemented as a callback to be sure the scroll height has been updated.
-      if (topic.isNewMessage(msg.seq)) {
-        if (this.state.scrollPosition > SHOW_GO_TO_LAST_DIST) {
-          this.setState({showGoToLastButton: true});
+    clearTimeout(this.keyPressTimer);
+    this.setState(
+      {
+        maxSeqId: topic.maxMsgSeq(),
+        minSeqId: topic.minMsgSeq(),
+        typingIndicator: false,
+      },
+      (_) => {
+        // Scroll to the bottom if the message is added to the end of the message
+        // list if already at the bottom, otherwise show [go to latest] button.
+        // Implemented as a callback to be sure the scroll height has been updated.
+        if (topic.isNewMessage(msg.seq)) {
+          if (this.state.scrollPosition > SHOW_GO_TO_LAST_DIST) {
+            this.setState({ showGoToLastButton: true });
+          } else {
+            this.goToLatestMessage();
+          }
         } else {
-          this.goToLatestMessage();
-        }
-      } else {
-        if (this.messagesScroller) {
-          this.messagesScroller.scrollTop = this.messagesScroller.scrollHeight - this.state.scrollPosition -
-            this.messagesScroller.offsetHeight;
+          if (this.messagesScroller) {
+            this.messagesScroller.scrollTop =
+              this.messagesScroller.scrollHeight -
+              this.state.scrollPosition -
+              this.messagesScroller.offsetHeight;
+          }
         }
       }
-    });
+    );
 
     // Aknowledge messages except own messages. They are
     // automatically assumed to be read and recived.
     const status = topic.msgStatus(msg, true);
-    if (status >= Tinode.MESSAGE_STATUS_SENT && msg.from != this.props.myUserId) {
+    if (
+      status >= Tinode.MESSAGE_STATUS_SENT &&
+      msg.from != this.props.myUserId
+    ) {
       this.postReadNotification(msg.seq);
     }
   }
 
   handleAllMessagesReceived(count) {
-    this.setState({fetchingMessages: false});
+    this.setState({ fetchingMessages: false });
     if (count > 0) {
       // 0 means "latest".
       this.postReadNotification(0);
@@ -737,16 +823,19 @@ class MessagesView extends React.Component {
 
   handleInfoReceipt(info) {
     switch (info.what) {
-      case 'kp': {
+      case "kp": {
         clearTimeout(this.keyPressTimer);
-        this.keyPressTimer = setTimeout(_ => this.setState({typingIndicator: false}), KEYPRESS_DELAY + 1000);
+        this.keyPressTimer = setTimeout(
+          (_) => this.setState({ typingIndicator: false }),
+          KEYPRESS_DELAY + 1000
+        );
         if (!this.state.typingIndicator) {
-          this.setState({typingIndicator: true});
+          this.setState({ typingIndicator: true });
         }
         break;
       }
-      case 'read':
-      case 'recv':
+      case "read":
+      case "recv":
         // Redraw due to changed recv/read status.
         this.forceUpdate();
         break;
@@ -774,13 +863,19 @@ class MessagesView extends React.Component {
     if (this.state.videoPreview && this.state.videoPreview.url) {
       URL.revokeObjectURL(this.state.videoPreview.url);
     }
-    this.setState({ imagePostview: null, imagePreview: null, docPreview: null, videoPreview: null, videoPostview: null});
+    this.setState({
+      imagePostview: null,
+      imagePreview: null,
+      docPreview: null,
+      videoPreview: null,
+      videoPostview: null,
+    });
   }
 
   handleFormResponse(action, text, data) {
-    if (action == 'pub') {
+    if (action == "pub") {
       this.sendMessage(Drafty.attachJSON(Drafty.parse(text), data));
-    } else if (action == 'url') {
+    } else if (action == "url") {
       const url = new URL(data.ref);
       const params = url.searchParams;
       for (let key in data.resp) {
@@ -788,15 +883,15 @@ class MessagesView extends React.Component {
           params.set(key, data.resp[key]);
         }
       }
-      ['name', 'seq'].map((key) => {
+      ["name", "seq"].map((key) => {
         if (data[key]) {
           params.set(key, data[key]);
         }
       });
-      params.set('uid', this.props.myUserId);
-      params.set('topic', this.state.topic);
+      params.set("uid", this.props.myUserId);
+      params.set("topic", this.state.topic);
       url.search = params;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     } else {
       console.info("Unknown action in form", action);
     }
@@ -805,11 +900,15 @@ class MessagesView extends React.Component {
   handleContextClick(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.props.showContextMenu({ topicName: this.state.topic, y: e.pageY, x: e.pageX });
+    this.props.showContextMenu({
+      topicName: this.state.topic,
+      y: e.pageY,
+      x: e.pageX,
+    });
   }
 
   handleShowMessageContextMenu(params, messageSpecificMenuItems) {
-    if (params.userFrom == 'chan') {
+    if (params.userFrom == "chan") {
       params.userFrom = this.state.topic;
       params.userName = this.state.title;
     }
@@ -818,11 +917,11 @@ class MessagesView extends React.Component {
     const topic = this.props.tinode.getTopic(params.topicName);
     if (topic) {
       if (!topic.isChannelType()) {
-        menuItems.push('message_delete');
+        menuItems.push("message_delete");
       }
       const acs = topic.getAccessMode();
       if (acs && acs.isDeleter()) {
-        menuItems.push('message_delete_hard');
+        menuItems.push("message_delete_hard");
       }
     }
     this.props.showContextMenu(params, menuItems);
@@ -834,7 +933,11 @@ class MessagesView extends React.Component {
 
   handleEnablePeer(e) {
     e.preventDefault();
-    this.props.onChangePermissions(this.state.topic, DEFAULT_P2P_ACCESS_MODE, this.state.topic);
+    this.props.onChangePermissions(
+      this.state.topic,
+      DEFAULT_P2P_ACCESS_MODE,
+      this.state.topic
+    );
   }
 
   sendKeyPress(audio) {
@@ -864,15 +967,18 @@ class MessagesView extends React.Component {
           return;
         }
         // Editing an existing message.
-        head = {replace: ':' + this.state.reply.seq};
+        head = { replace: ":" + this.state.reply.seq };
       } else if (this.state.reply.content) {
         // Replying to a message in this topic.
         // Turn it into Drafty so we can make a quoted Drafty object later.
-        head = {reply: '' + this.state.reply.seq};
-        if (typeof msg == 'string') {
+        head = { reply: "" + this.state.reply.seq };
+        if (typeof msg == "string") {
           msg = Drafty.parse(msg);
         }
-        msg = Drafty.append(Drafty.sanitizeEntities(this.state.reply.content), msg);
+        msg = Drafty.append(
+          Drafty.sanitizeEntities(this.state.reply.content),
+          msg
+        );
       }
       this.handleCancelReply();
     }
@@ -881,8 +987,9 @@ class MessagesView extends React.Component {
 
   // Retry sending a message.
   retrySend(pub) {
-    this.props.sendMessage(pub.content, undefined, undefined, pub.head)
-      .then(_ => {
+    this.props
+      .sendMessage(pub.content, undefined, undefined, pub.head)
+      .then((_) => {
         // All good. Remove the original message draft from the cache.
         const topic = this.props.tinode.getTopic(this.state.topic);
         topic.delMessagesList([pub.seq], true);
@@ -894,14 +1001,22 @@ class MessagesView extends React.Component {
   // - if file is small enough, just send it in-band.
   sendFileAttachment(file) {
     // Server-provided limit reduced for base64 encoding and overhead.
-    const maxInbandAttachmentSize = (this.props.tinode.getServerParam('maxMessageSize',
-      MAX_INBAND_ATTACHMENT_SIZE) * 0.75 - 1024) | 0;
+    const maxInbandAttachmentSize =
+      (this.props.tinode.getServerParam(
+        "maxMessageSize",
+        MAX_INBAND_ATTACHMENT_SIZE
+      ) *
+        0.75 -
+        1024) |
+      0;
 
     if (file.size > maxInbandAttachmentSize) {
       // Too large to send inband - uploading out of band and sending as a link.
       const uploader = this.props.tinode.getLargeFileHelper();
       if (!uploader) {
-        this.props.onError(this.props.intl.formatMessage(messages.cannot_initiate_upload));
+        this.props.onError(
+          this.props.intl.formatMessage(messages.cannot_initiate_upload)
+        );
         return;
       }
       const uploadCompletionPromise = uploader.upload(file);
@@ -909,39 +1024,51 @@ class MessagesView extends React.Component {
         mime: file.type,
         filename: file.name,
         size: file.size,
-        urlPromise: uploadCompletionPromise
+        urlPromise: uploadCompletionPromise,
       });
       // Pass data and the uploader to the TinodeWeb.
       this.sendMessage(msg, uploadCompletionPromise, uploader);
     } else {
       // Small enough to send inband.
       fileToBase64(file)
-        .then(b64 => this.sendMessage(Drafty.attachFile(null, {
-          mime: b64.mime,
-          data: b64.bits,
-          filename: b64.name,
-          size: file.size
-        })))
-        .catch(err => this.props.onError(err.message, 'err'));
+        .then((b64) =>
+          this.sendMessage(
+            Drafty.attachFile(null, {
+              mime: b64.mime,
+              data: b64.bits,
+              filename: b64.name,
+              size: file.size,
+            })
+          )
+        )
+        .catch((err) => this.props.onError(err.message, "err"));
     }
   }
 
   // handleAttachFile method is called when [Attach file] button is clicked: launch attachment preview.
   handleAttachFile(file) {
-    const maxExternAttachmentSize = this.props.tinode.getServerParam('maxFileUploadSize', MAX_EXTERN_ATTACHMENT_SIZE);
+    const maxExternAttachmentSize = this.props.tinode.getServerParam(
+      "maxFileUploadSize",
+      MAX_EXTERN_ATTACHMENT_SIZE
+    );
 
     if (file.size > maxExternAttachmentSize) {
       // Too large.
-      this.props.onError(this.props.intl.formatMessage(messages.file_attachment_too_large,
-        {size: bytesToHumanSize(file.size), limit: bytesToHumanSize(maxExternAttachmentSize)}), 'err');
+      this.props.onError(
+        this.props.intl.formatMessage(messages.file_attachment_too_large, {
+          size: bytesToHumanSize(file.size),
+          limit: bytesToHumanSize(maxExternAttachmentSize),
+        }),
+        "err"
+      );
     } else {
       this.setState({
         docPreview: {
           file: file,
           name: file.name,
           size: file.size,
-          type: file.type
-        }
+          type: file.type,
+        },
       });
     }
   }
@@ -949,7 +1076,7 @@ class MessagesView extends React.Component {
   handleCallHangup(topic, seq) {
     this.props.onVideoCallClosed();
     this.setState({
-      rtcPanel: null
+      rtcPanel: null,
     });
     this.props.onCallHangup(topic, seq);
   }
@@ -962,14 +1089,22 @@ class MessagesView extends React.Component {
     const fname = this.state.imagePreview.filename;
 
     // Server-provided limit reduced for base64 encoding and overhead.
-    const maxInbandAttachmentSize = (this.props.tinode.getServerParam('maxMessageSize',
-      MAX_INBAND_ATTACHMENT_SIZE) * 0.75 - 1024) | 0;
+    const maxInbandAttachmentSize =
+      (this.props.tinode.getServerParam(
+        "maxMessageSize",
+        MAX_INBAND_ATTACHMENT_SIZE
+      ) *
+        0.75 -
+        1024) |
+      0;
 
     if (blob.size > maxInbandAttachmentSize) {
       // Too large to send inband - uploading out of band and sending as a link.
       const uploader = this.props.tinode.getLargeFileHelper();
       if (!uploader) {
-        this.props.onError(this.props.intl.formatMessage(messages.cannot_initiate_upload));
+        this.props.onError(
+          this.props.intl.formatMessage(messages.cannot_initiate_upload)
+        );
         return;
       }
       const uploadCompletionPromise = uploader.upload(blob);
@@ -977,8 +1112,8 @@ class MessagesView extends React.Component {
       // Make small preview to show while uploading.
       imageScaled(blob, IMAGE_PREVIEW_DIM, IMAGE_PREVIEW_DIM, -1, false)
         // Convert tiny image into base64 for serialization and previewing.
-        .then(scaled => blobToBase64(scaled.blob))
-        .then(b64 => {
+        .then((scaled) => blobToBase64(scaled.blob))
+        .then((b64) => {
           let msg = Drafty.insertImage(null, 0, {
             mime: mime,
             _tempPreview: b64.bits, // This preview will not be serialized.
@@ -987,7 +1122,7 @@ class MessagesView extends React.Component {
             height: height,
             filename: fname,
             size: blob.size,
-            urlPromise: uploadCompletionPromise
+            urlPromise: uploadCompletionPromise,
           });
           if (caption) {
             msg = Drafty.appendLineBreak(msg);
@@ -996,28 +1131,27 @@ class MessagesView extends React.Component {
           // Pass data and the uploader to the TinodeWeb.
           this.sendMessage(msg, uploadCompletionPromise, uploader);
         })
-        .catch(err => this.props.onError(err, 'err'));
+        .catch((err) => this.props.onError(err, "err"));
       return;
     }
 
     // Send the image inband if it's not too big. The image has been scaled already
     // in image preview.
-    blobToBase64(blob)
-      .then(b64 => {
-        let msg = Drafty.insertImage(null, 0, {
-          mime: b64.mime,
-          bits: b64.bits,
-          width: width,
-          height: height,
-          filename: fname,
-          size: blob.size
-        });
-        if (caption) {
-          msg = Drafty.appendLineBreak(msg);
-          msg = Drafty.append(msg, Drafty.parse(caption));
-        }
-        this.sendMessage(msg);
+    blobToBase64(blob).then((b64) => {
+      let msg = Drafty.insertImage(null, 0, {
+        mime: b64.mime,
+        bits: b64.bits,
+        width: width,
+        height: height,
+        filename: fname,
+        size: blob.size,
       });
+      if (caption) {
+        msg = Drafty.appendLineBreak(msg);
+        msg = Drafty.append(msg, Drafty.parse(caption));
+      }
+      this.sendMessage(msg);
+    });
   }
 
   // sendVideoAttachment sends the video bits as Drafty message.
@@ -1026,27 +1160,41 @@ class MessagesView extends React.Component {
     const height = params.height;
 
     // Server-provided limit reduced for base64 encoding and overhead.
-    const maxInbandAttachmentSize = (this.props.tinode.getServerParam('maxMessageSize',
-      MAX_INBAND_ATTACHMENT_SIZE) * 0.75 - 1024) | 0;
+    const maxInbandAttachmentSize =
+      (this.props.tinode.getServerParam(
+        "maxMessageSize",
+        MAX_INBAND_ATTACHMENT_SIZE
+      ) *
+        0.75 -
+        1024) |
+      0;
 
     const uploads = [];
     let uploader;
-    if ((videoBlob.size + previewBlob.size) > maxInbandAttachmentSize) {
+    if (videoBlob.size + previewBlob.size > maxInbandAttachmentSize) {
       // One or both are too large to send inband. Uploading out of band and sending as a link.
       uploader = this.props.tinode.getLargeFileHelper();
       if (!uploader) {
-        this.props.onError(this.props.intl.formatMessage(messages.cannot_initiate_upload));
+        this.props.onError(
+          this.props.intl.formatMessage(messages.cannot_initiate_upload)
+        );
         return;
       }
 
-      uploads[0] = videoBlob.size > maxInbandAttachmentSize * 0.675 ? uploader.upload(videoBlob) : null;
-      uploads[1] = previewBlob.size > maxInbandAttachmentSize * 0.275 ? uploader.upload(previewBlob) : null;
+      uploads[0] =
+        videoBlob.size > maxInbandAttachmentSize * 0.675
+          ? uploader.upload(videoBlob)
+          : null;
+      uploads[1] =
+        previewBlob.size > maxInbandAttachmentSize * 0.275
+          ? uploader.upload(previewBlob)
+          : null;
     }
 
     if (uploads.length == 0) {
       // Both video and preview are small enough to send inband.
-      Promise.all([blobToBase64(videoBlob), blobToBase64(previewBlob)])
-        .then(b64s => {
+      Promise.all([blobToBase64(videoBlob), blobToBase64(previewBlob)]).then(
+        (b64s) => {
           const [v64, i64] = b64s;
           let msg = Drafty.insertVideo(null, 0, {
             mime: v64.mime,
@@ -1057,14 +1205,15 @@ class MessagesView extends React.Component {
             height: height,
             duration: params.duration,
             filename: params.name,
-            size: videoBlob.size
+            size: videoBlob.size,
           });
           if (caption) {
             msg = Drafty.appendLineBreak(msg);
             msg = Drafty.append(msg, Drafty.parse(caption));
           }
           this.sendMessage(msg);
-      });
+        }
+      );
       return;
     }
 
@@ -1074,14 +1223,22 @@ class MessagesView extends React.Component {
     // Small video converted to base64.
     b64conv[0] = uploads[0] ? null : blobToBase64(videoBlob);
     // Full-size preview fits inline.
-    b64conv[1] = uploads[1] ? null : imageScaled(previewBlob, MAX_IMAGE_DIM, MAX_IMAGE_DIM, -1, false)
-      .then(scaled => blobToBase64(scaled.blob));
+    b64conv[1] = uploads[1]
+      ? null
+      : imageScaled(previewBlob, MAX_IMAGE_DIM, MAX_IMAGE_DIM, -1, false).then(
+          (scaled) => blobToBase64(scaled.blob)
+        );
     // Small preview to show while uploading.
-    b64conv[2] = imageScaled(previewBlob, VIDEO_PREVIEW_DIM, VIDEO_PREVIEW_DIM, -1, false)
-      .then(scaled => blobToBase64(scaled.blob));
+    b64conv[2] = imageScaled(
+      previewBlob,
+      VIDEO_PREVIEW_DIM,
+      VIDEO_PREVIEW_DIM,
+      -1,
+      false
+    ).then((scaled) => blobToBase64(scaled.blob));
     // Convert tiny image into base64 for serialization and previewing.
     Promise.all(b64conv)
-      .then(b64s => {
+      .then((b64s) => {
         const [video, img, preview] = b64s;
         let msg = Drafty.insertVideo(null, 0, {
           mime: params.mime,
@@ -1094,7 +1251,7 @@ class MessagesView extends React.Component {
           duration: params.duration,
           filename: params.name,
           size: videoBlob.size,
-          urlPromise: uploadCompletionPromise
+          urlPromise: uploadCompletionPromise,
         });
 
         if (caption) {
@@ -1104,38 +1261,52 @@ class MessagesView extends React.Component {
         // Pass data and the uploader to the TinodeWeb.
         this.sendMessage(msg, uploadCompletionPromise, uploader);
       })
-      .catch(err => this.props.onError(err.message, 'err'));
+      .catch((err) => this.props.onError(err.message, "err"));
   }
 
   // handleAttachImageOrVideo method is called when [Attach image or video] button is clicked: launch image or video preview.
   handleAttachImageOrVideo(file) {
-    const maxExternAttachmentSize = this.props.tinode.getServerParam('maxFileUploadSize', MAX_EXTERN_ATTACHMENT_SIZE);
+    const maxExternAttachmentSize = this.props.tinode.getServerParam(
+      "maxFileUploadSize",
+      MAX_EXTERN_ATTACHMENT_SIZE
+    );
 
-    if (file.type.startsWith('video/')) {
-      this.setState({videoPreview: {
-        url: URL.createObjectURL(file),
-        blob: file,
-        filename: file.name,
-        size: file.size,
-        mime: file.type
-      }});
+    if (file.type.startsWith("video/")) {
+      this.setState({
+        videoPreview: {
+          url: URL.createObjectURL(file),
+          blob: file,
+          filename: file.name,
+          size: file.size,
+          mime: file.type,
+        },
+      });
       return;
     }
 
     // Get image dimensions and size, optionally scale it down.
-    imageScaled(file, MAX_IMAGE_DIM, MAX_IMAGE_DIM, maxExternAttachmentSize, false)
-      .then(scaled => {
-        this.setState({imagePreview: {
-          url: URL.createObjectURL(scaled.blob),
-          blob: scaled.blob,
-          filename: scaled.name,
-          width: scaled.width,
-          height: scaled.height,
-          size: scaled.blob.size,
-          mime: scaled.mime
-        }});
-      }).catch(err => {
-        this.props.onError(err.message, 'err');
+    imageScaled(
+      file,
+      MAX_IMAGE_DIM,
+      MAX_IMAGE_DIM,
+      maxExternAttachmentSize,
+      false
+    )
+      .then((scaled) => {
+        this.setState({
+          imagePreview: {
+            url: URL.createObjectURL(scaled.blob),
+            blob: scaled.blob,
+            filename: scaled.name,
+            width: scaled.width,
+            height: scaled.height,
+            size: scaled.blob.size,
+            mime: scaled.mime,
+          },
+        });
+      })
+      .catch((err) => {
+        this.props.onError(err.message, "err");
       });
   }
 
@@ -1145,7 +1316,7 @@ class MessagesView extends React.Component {
       return;
     }
     const file = files[0];
-    if (file.type && file.type.startsWith('image/')) {
+    if (file.type && file.type.startsWith("image/")) {
       this.handleAttachImageOrVideo(file);
     } else {
       this.handleAttachFile(file);
@@ -1155,15 +1326,23 @@ class MessagesView extends React.Component {
   // sendAudioAttachment sends audio bits inband as Drafty message (no preview).
   sendAudioAttachment(url, preview, duration) {
     fetch(url)
-      .then(result => result.blob())
-      .then(blob => {
+      .then((result) => result.blob())
+      .then((blob) => {
         // Server-provided limit reduced for base64 encoding and overhead.
-        const maxInbandAttachmentSize = this.props.tinode.getServerParam('maxMessageSize', MAX_INBAND_ATTACHMENT_SIZE) * 0.75 - 1024;
+        const maxInbandAttachmentSize =
+          this.props.tinode.getServerParam(
+            "maxMessageSize",
+            MAX_INBAND_ATTACHMENT_SIZE
+          ) *
+            0.75 -
+          1024;
         if (blob.size > maxInbandAttachmentSize) {
           // Too large to send inband - uploading out of band and sending as a link.
           const uploader = this.props.tinode.getLargeFileHelper();
           if (!uploader) {
-            this.props.onError(this.props.intl.formatMessage(messages.cannot_initiate_upload));
+            this.props.onError(
+              this.props.intl.formatMessage(messages.cannot_initiate_upload)
+            );
             return;
           }
           const uploadCompletionPromise = uploader.upload(blob);
@@ -1172,25 +1351,28 @@ class MessagesView extends React.Component {
             size: blob.size,
             duration: duration,
             preview: preview,
-            urlPromise: uploadCompletionPromise
+            urlPromise: uploadCompletionPromise,
           });
           // Pass data and the uploader to the TinodeWeb.
           this.sendMessage(msg, uploadCompletionPromise, uploader);
         } else {
           // Small enough to send inband.
-          blobToBase64(blob)
-            .then(b64 => {
-              this.sendMessage(Drafty.appendAudio(null, {
+          blobToBase64(blob).then((b64) => {
+            this.sendMessage(
+              Drafty.appendAudio(null, {
                 mime: b64.mime,
                 bits: b64.bits,
                 size: blob.size,
                 duration: duration,
                 preview: preview,
-              }))
-            })
+              })
+            );
+          });
         }
       })
-      .catch(err => {this.props.onError(err.message, 'err')});;
+      .catch((err) => {
+        this.props.onError(err.message, "err");
+      });
   }
 
   handleCancelUpload(seq, uploader) {
@@ -1208,24 +1390,29 @@ class MessagesView extends React.Component {
   // senderName: full name of the sender of the original message.
   handlePickReply(seq, content, senderId, senderName) {
     if (!seq || !content) {
-      this.setState({reply: null});
+      this.setState({ reply: null });
       return;
     }
 
-    content = typeof content == 'string' ? Drafty.init(content) : content;
+    content = typeof content == "string" ? Drafty.init(content) : content;
     if (Drafty.isValid(content)) {
       content = Drafty.replyContent(content, QUOTED_REPLY_LENGTH);
     } else {
       // /!\ invalid content.
-      content = Drafty.append(Drafty.init('\u26A0 '),
-        Drafty.wrapInto(this.props.intl.formatMessage(messages.invalid_content), 'EM'));
+      content = Drafty.append(
+        Drafty.init("\u26A0 "),
+        Drafty.wrapInto(
+          this.props.intl.formatMessage(messages.invalid_content),
+          "EM"
+        )
+      );
     }
 
     this.setState({
       reply: {
         content: Drafty.quote(senderName, senderId, content),
-        seq: seq
-      }
+        seq: seq,
+      },
     });
     this.props.onCancelForwardMessage();
   }
@@ -1234,50 +1421,65 @@ class MessagesView extends React.Component {
   // context: message content.
   handleEditMessage(seq, content) {
     if (!seq || !content) {
-      this.setState({reply: null});
+      this.setState({ reply: null });
       return;
     }
 
-    content = typeof content == 'string' ? Drafty.init(content) : content;
+    content = typeof content == "string" ? Drafty.init(content) : content;
     const editable = Drafty.toMarkdown(content);
     if (Drafty.isValid(content)) {
       content = Drafty.replyContent(content, EDIT_PREVIEW_LENGTH);
     } else {
       // /!\ invalid content.
-      content = Drafty.append(Drafty.init('\u26A0 '),
-        Drafty.wrapInto(this.props.intl.formatMessage(messages.invalid_content), 'EM'));
+      content = Drafty.append(
+        Drafty.init("\u26A0 "),
+        Drafty.wrapInto(
+          this.props.intl.formatMessage(messages.invalid_content),
+          "EM"
+        )
+      );
     }
 
     this.setState({
       reply: {
-        content: Drafty.quote(this.props.intl.formatMessage(messages.editing_message), null, content),
+        content: Drafty.quote(
+          this.props.intl.formatMessage(messages.editing_message),
+          null,
+          content
+        ),
         seq: seq,
-        editing: true
+        editing: true,
       },
-      contentToEdit: editable
+      contentToEdit: editable,
     });
     this.props.onCancelForwardMessage();
   }
 
-
   handleCancelReply() {
-    this.setState({reply: null, contentToEdit: null});
+    this.setState({ reply: null, contentToEdit: null });
     this.props.onCancelForwardMessage();
   }
 
   handleQuoteClick(replyToSeq) {
     const ref = this.getOrCreateMessageRef(replyToSeq);
     if (ref && ref.current) {
-      ref.current.scrollIntoView({block: "center", behavior: "smooth"});
-      ref.current.classList.add('flash');
-      setTimeout(_ => {ref.current.classList.remove('flash')} , 1000);
+      ref.current.scrollIntoView({ block: "center", behavior: "smooth" });
+      ref.current.classList.add("flash");
+      setTimeout((_) => {
+        ref.current.classList.remove("flash");
+      }, 1000);
     } else {
       console.error("Unresolved message ref", replyToSeq);
     }
   }
 
   isDragEnabled() {
-    return this.state.isWriter && !this.state.unconfirmed && !this.props.forwardMessage && !this.state.peerMessagingDisabled;
+    return (
+      this.state.isWriter &&
+      !this.state.unconfirmed &&
+      !this.props.forwardMessage &&
+      !this.state.peerMessagingDisabled
+    );
   }
 
   handleDragStart(e) {
@@ -1291,7 +1493,7 @@ class MessagesView extends React.Component {
     e.stopPropagation();
     this.dragCounter++;
     if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      this.setState({dragging: true});
+      this.setState({ dragging: true });
     }
   }
 
@@ -1300,7 +1502,7 @@ class MessagesView extends React.Component {
     e.stopPropagation();
     this.dragCounter--;
     if (this.dragCounter <= 0) {
-      this.setState({dragging: false});
+      this.setState({ dragging: false });
     }
   }
 
@@ -1312,22 +1514,27 @@ class MessagesView extends React.Component {
   handleDrop(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({dragging: false});
-    if (this.isDragEnabled() && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    this.setState({ dragging: false });
+    if (
+      this.isDragEnabled() &&
+      e.dataTransfer.files &&
+      e.dataTransfer.files.length > 0
+    ) {
       this.handleFileDrop(e.dataTransfer.files);
       this.dragCounter = 0;
     }
   }
 
   render() {
-    const {formatMessage} = this.props.intl;
+    const { formatMessage } = this.props.intl;
 
     let component;
     if (!this.state.topic) {
       component = (
         <LogoView
           serverVersion={this.props.serverVersion}
-          serverAddress={this.props.serverAddress} />
+          serverAddress={this.props.serverAddress}
+        />
       );
     } else {
       let component2;
@@ -1340,10 +1547,11 @@ class MessagesView extends React.Component {
             reply={this.state.reply}
             onCancelReply={this.handleCancelReply}
             onClose={this.handleClosePreview}
-            onSendMessage={this.sendImageAttachment} />
+            onSendMessage={this.sendImageAttachment}
+          />
         );
       } else if (this.state.videoPreview) {
-          // Preview video.
+        // Preview video.
         component2 = (
           <VideoPreview
             content={this.state.videoPreview}
@@ -1352,14 +1560,16 @@ class MessagesView extends React.Component {
             onError={this.props.onError}
             onCancelReply={this.handleCancelReply}
             onClose={this.handleClosePreview}
-            onSendMessage={this.sendVideoAttachment} />
+            onSendMessage={this.sendVideoAttachment}
+          />
         );
       } else if (this.state.imagePostview) {
         // Expand received image.
         component2 = (
           <ImagePreview
             content={this.state.imagePostview}
-            onClose={this.handleClosePreview} />
+            onClose={this.handleClosePreview}
+          />
         );
       } else if (this.state.videoPostview) {
         // Play received video.
@@ -1368,7 +1578,8 @@ class MessagesView extends React.Component {
             content={this.state.videoPostview}
             tinode={this.props.tinode}
             onError={this.props.onError}
-            onClose={this.handleClosePreview} />
+            onClose={this.handleClosePreview}
+          />
         );
       } else if (this.state.docPreview) {
         // Preview attachment before sending.
@@ -1379,7 +1590,8 @@ class MessagesView extends React.Component {
             reply={this.state.reply}
             onCancelReply={this.handleCancelReply}
             onClose={this.handleClosePreview}
-            onSendMessage={this.sendFileAttachment} />
+            onSendMessage={this.sendFileAttachment}
+          />
         );
       } else if (this.state.rtcPanel) {
         component2 = (
@@ -1391,13 +1603,13 @@ class MessagesView extends React.Component {
             tinode={this.props.tinode}
             title={this.state.title}
             avatar={this.state.avatar || true}
-
             onError={this.props.onError}
             onHangup={this.handleCallHangup}
             onInvite={this.props.onCallInvite}
             onSendOffer={this.props.onCallSendOffer}
             onIceCandidate={this.props.onCallIceCandidate}
-            onSendAnswer={this.props.onCallSendAnswer} />
+            onSendAnswer={this.props.onCallSendAnswer}
+          />
         );
       } else {
         const topic = this.props.tinode.getTopic(this.state.topic);
@@ -1406,13 +1618,13 @@ class MessagesView extends React.Component {
         const icon_badges = [];
         if (topic.trusted) {
           if (topic.trusted.verified) {
-            icon_badges.push({icon: 'verified', color: 'badge-inv'});
+            icon_badges.push({ icon: "verified", color: "badge-inv" });
           }
           if (topic.trusted.staff) {
-            icon_badges.push({icon: 'staff', color: 'badge-inv'});
+            icon_badges.push({ icon: "staff", color: "badge-inv" });
           }
           if (topic.trusted.danger) {
-            icon_badges.push({icon: 'dangerous', color: 'badge-inv'});
+            icon_badges.push({ icon: "dangerous", color: "badge-inv" });
           }
         }
 
@@ -1421,31 +1633,33 @@ class MessagesView extends React.Component {
         let prevDate = null;
         let chatBoxClass = null;
         topic.messages((msg, prev, next, i) => {
-          let nextFrom = next ? (next.from || 'chan') : null;
+          let nextFrom = next ? next.from || "chan" : null;
 
-          let sequence = 'single';
-          let thisFrom = msg.from || 'chan';
+          let sequence = "single";
+          let thisFrom = msg.from || "chan";
           if (thisFrom == previousFrom) {
             if (thisFrom == nextFrom) {
-              sequence = 'middle';
+              sequence = "middle";
             } else {
-              sequence = 'last';
+              sequence = "last";
             }
           } else if (thisFrom == nextFrom) {
-            sequence = 'first';
+            sequence = "first";
           }
           previousFrom = thisFrom;
 
           const isReply = !(thisFrom == this.props.myUserId);
           const deliveryStatus = topic.msgStatus(msg, true);
 
-          let userFrom = thisFrom, userName, userAvatar;
+          let userFrom = thisFrom,
+            userName,
+            userAvatar;
           const user = topic.userDesc(thisFrom);
           if (user && user.public) {
             userName = user.public.fn;
             userAvatar = makeImageUrl(user.public.photo);
           }
-          chatBoxClass = groupTopic ? 'chat-box group' : 'chat-box';
+          chatBoxClass = groupTopic ? "chat-box group" : "chat-box";
 
           // Ref for this chat message.
           const ref = this.getOrCreateMessageRef(msg.seq);
@@ -1456,20 +1670,20 @@ class MessagesView extends React.Component {
 
           if (msg.hi) {
             // Deleted message.
-            messageNodes.push(
-              <MetaMessage
-                deleted={true}
-                key={msg.seq} />
-              );
+            messageNodes.push(<MetaMessage deleted={true} key={msg.seq} />);
           } else {
             const thisDate = new Date(msg.ts);
             // This message was sent on a different date than the previous.
-            if (!prevDate || prevDate.toDateString() != thisDate.toDateString()) {
+            if (
+              !prevDate ||
+              prevDate.toDateString() != thisDate.toDateString()
+            ) {
               messageNodes.push(
                 <MetaMessage
                   date={relativeDateFormat(msg.ts)}
                   locale={this.props.intl.locale}
-                  key={'date-' + msg.seq} />
+                  key={"date-" + msg.seq}
+                />
               );
               prevDate = thisDate;
             }
@@ -1492,7 +1706,7 @@ class MessagesView extends React.Component {
                 received={deliveryStatus}
                 uploader={msg._uploader}
                 userIsWriter={this.state.isWriter}
-                viewportWidth={this.props.viewportWidth}  // Used by `formatter`.
+                viewportWidth={this.props.viewportWidth} // Used by `formatter`.
                 showContextMenu={this.handleShowMessageContextMenu}
                 onExpandMedia={this.handleExpandMedia}
                 onFormResponse={this.handleFormResponse}
@@ -1502,7 +1716,8 @@ class MessagesView extends React.Component {
                 onQuoteClick={this.handleQuoteClick}
                 onError={this.props.onError}
                 ref={ref}
-                key={msg.seq} />
+                key={msg.seq}
+              />
             );
           }
         });
@@ -1511,28 +1726,41 @@ class MessagesView extends React.Component {
         if (isChannel) {
           lastSeen = formatMessage(messages.channel);
         } else {
-          const cont = this.props.tinode.getMeTopic().getContact(this.state.topic);
+          const cont = this.props.tinode
+            .getMeTopic()
+            .getContact(this.state.topic);
           if (cont && Tinode.isP2PTopicName(cont.topic)) {
             if (cont.online) {
               lastSeen = formatMessage(messages.online_now);
             } else if (cont.seen) {
-              lastSeen = formatMessage(messages.last_seen) + ": " +
+              lastSeen =
+                formatMessage(messages.last_seen) +
+                ": " +
                 shortDateFormat(cont.seen.when, this.props.intl.locale);
               // TODO: also handle user agent in c.seen.ua
             }
           }
         }
         const avatar = this.state.avatar || true;
-        const online = this.state.deleted ? null :
-          this.props.online ? 'online' + (this.state.typingIndicator ? ' typing' : '') : 'offline';
+        const online = this.state.deleted
+          ? null
+          : this.props.online
+          ? "online" + (this.state.typingIndicator ? " typing" : "")
+          : "offline";
 
-        const titleClass = 'panel-title' + (this.state.deleted ? ' deleted' : '');
+        const titleClass =
+          "panel-title" + (this.state.deleted ? " deleted" : "");
 
         let messagesComponent = (
           <>
             <div id="messages-container">
-              <button className={'action-button' + (this.state.showGoToLastButton ? '' : ' hidden')}
-                onClick={this.goToLatestMessage}>
+              <button
+                className={
+                  "action-button" +
+                  (this.state.showGoToLastButton ? "" : " hidden")
+                }
+                onClick={this.goToLatestMessage}
+              >
                 <i className="material-icons">arrow_downward</i>
               </button>
               <div id="messages-panel" ref={this.handleScrollReference}>
@@ -1540,28 +1768,41 @@ class MessagesView extends React.Component {
                   {messageNodes}
                 </ul>
               </div>
-              {!this.state.isReader ?
-              <div id="write-only-background">
-                {this.state.readingBlocked ?
-                <div id="write-only-note">
-                  <FormattedMessage id="messages_not_readable" defaultMessage="no access to messages"
-                    description="Message shown in topic without the read access" />
+              {!this.state.isReader ? (
+                <div id="write-only-background">
+                  {this.state.readingBlocked ? (
+                    <div id="write-only-note">
+                      <FormattedMessage
+                        id="messages_not_readable"
+                        defaultMessage="no access to messages"
+                        description="Message shown in topic without the read access"
+                      />
+                    </div>
+                  ) : null}
                 </div>
-                : null }
-              </div>
-              : null }
+              ) : null}
             </div>
-            {this.state.peerMessagingDisabled && !this.state.unconfirmed ?
+            {this.state.peerMessagingDisabled && !this.state.unconfirmed ? (
               <div id="peer-messaging-disabled-note">
-                <i className="material-icons secondary">block</i> <FormattedMessage
-                  id="peers_messaging_disabled" defaultMessage="Peer's messaging is disabled."
-                  description="Shown when the p2p peer's messaging is disabled" /> <a href="#"
-                    onClick={this.handleEnablePeer}><FormattedMessage id="enable_peers_messaging"
-                    defaultMessage="Enable" description="Call to action to enable peer's messaging" /></a>.
-              </div> : null}
-            {this.state.unconfirmed ?
+                <i className="material-icons secondary">block</i>{" "}
+                <FormattedMessage
+                  id="peers_messaging_disabled"
+                  defaultMessage="Peer's messaging is disabled."
+                  description="Shown when the p2p peer's messaging is disabled"
+                />{" "}
+                <a href="#" onClick={this.handleEnablePeer}>
+                  <FormattedMessage
+                    id="enable_peers_messaging"
+                    defaultMessage="Enable"
+                    description="Call to action to enable peer's messaging"
+                  />
+                </a>
+                .
+              </div>
+            ) : null}
+            {this.state.unconfirmed ? (
               <Invitation onAction={this.handleNewChatAcceptance} />
-              :
+            ) : (
               <SendMessage
                 tinode={this.props.tinode}
                 topicName={this.state.topic}
@@ -1572,71 +1813,104 @@ class MessagesView extends React.Component {
                 onKeyPress={this.sendKeyPress}
                 onRecordingProgress={this.sendKeyPress}
                 onSendMessage={this.sendMessage}
-                onAttachFile={this.props.forwardMessage ? null : this.handleAttachFile}
-                onAttachImage={this.props.forwardMessage ? null : this.handleAttachImageOrVideo}
-                onAttachAudio={this.props.forwardMessage ? null : this.sendAudioAttachment}
+                onAttachFile={
+                  this.props.forwardMessage ? null : this.handleAttachFile
+                }
+                onAttachImage={
+                  this.props.forwardMessage
+                    ? null
+                    : this.handleAttachImageOrVideo
+                }
+                onAttachAudio={
+                  this.props.forwardMessage ? null : this.sendAudioAttachment
+                }
                 onError={this.props.onError}
                 onQuoteClick={this.handleQuoteClick}
-                onCancelReply={this.handleCancelReply} />}
+                onCancelReply={this.handleCancelReply}
+              />
+            )}
           </>
         );
 
         component2 = (
           <>
             <div id="topic-caption-panel" className="caption-panel">
-              {this.props.displayMobile ?
-                <a href="#" id="hide-message-view" onClick={(e) => {e.preventDefault(); this.props.onHideMessagesView();}}>
+              {this.props.displayMobile ? (
+                <a
+                  href="#"
+                  id="hide-message-view"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    this.props.onHideMessagesView();
+                  }}
+                >
                   <i className="material-icons">arrow_back</i>
                 </a>
-                :
-                null}
+              ) : null}
               <div className="avatar-box">
                 <LetterTile
                   tinode={this.props.tinode}
                   avatar={avatar}
                   topic={this.state.topic}
                   title={this.state.title}
-                  deleted={this.state.deleted} />
+                  deleted={this.state.deleted}
+                />
                 {!isChannel ? <span className={online} /> : null}
               </div>
               <div id="topic-title-group">
-                <div id="topic-title" className={titleClass}>{
-                  this.state.title ||
-                  <i><FormattedMessage id="unnamed_topic" defaultMessage="Unnamed"
-                    description="Title shown when the topic has no name" /></i>
-                }<ContactBadges badges={icon_badges} /></div>
+                <div id="topic-title" className={titleClass}>
+                  {this.state.title || (
+                    <i>
+                      <FormattedMessage
+                        id="unnamed_topic"
+                        defaultMessage="Unnamed"
+                        description="Title shown when the topic has no name"
+                      />
+                    </i>
+                  )}
+                  <ContactBadges badges={icon_badges} />
+                </div>
                 <div id="topic-last-seen">{lastSeen}</div>
               </div>
-              {groupTopic ?
+              {groupTopic ? (
                 <GroupSubs
                   tinode={this.props.tinode}
-                  subscribers={this.state.onlineSubs} /> :
+                  subscribers={this.state.onlineSubs}
+                />
+              ) : (
                 <div id="topic-users" />
-              }
+              )}
               <div>
                 <a href="#" onClick={this.handleContextClick}>
                   <i className="material-icons">more_vert</i>
                 </a>
               </div>
             </div>
-            {this.props.displayMobile ?
+            {this.props.displayMobile ? (
               <ErrorPanel
                 level={this.props.errorLevel}
                 text={this.props.errorText}
-                onClearError={this.props.onError} />
-              : null}
+                onClearError={this.props.onError}
+              />
+            ) : null}
             <LoadSpinner show={this.state.fetchingMessages} />
             {messagesComponent}
-            {this.state.dragging && this.isDragEnabled() ?
-              <div className="drag-n-drop">{formatMessage(messages.drag_file)}</div>
-            : null}
+            {this.state.dragging && this.isDragEnabled() ? (
+              <div className="drag-n-drop">
+                {formatMessage(messages.drag_file)}
+              </div>
+            ) : null}
           </>
         );
       }
-      component = <div id="topic-view"  ref={this.mountDnDEvents}>{component2}</div>
+      component = (
+        <div id="topic-view" ref={this.mountDnDEvents}>
+          {component2}
+        </div>
+      );
     }
     return component;
   }
-};
+}
 
 export default injectIntl(MessagesView);

@@ -1,5 +1,5 @@
 // Password with a visiblity toggle.
-import React from 'react';
+import React from "react";
 
 export default class VisiblePassword extends React.PureComponent {
   constructor(props) {
@@ -9,7 +9,7 @@ export default class VisiblePassword extends React.PureComponent {
 
     this.state = {
       value: this.props.value,
-      visible: false
+      visible: false,
     };
 
     this.handleVisibility = this.handleVisibility.bind(this);
@@ -25,7 +25,7 @@ export default class VisiblePassword extends React.PureComponent {
   }
 
   handeTextChange(e) {
-    this.setState({value: e.target.value});
+    this.setState({ value: e.target.value });
     if (this.props.onChange) {
       this.props.onChange(e);
     }
@@ -33,13 +33,13 @@ export default class VisiblePassword extends React.PureComponent {
 
   handleVisibility(e) {
     e.preventDefault();
-    this.setState({visible: !this.state.visible});
+    this.setState({ visible: !this.state.visible });
   }
 
   handleKeyDown(e) {
     if (e.keyCode == 27) {
       // Escape pressed
-      this.setState({value: this.props.value, visible: false});
+      this.setState({ value: this.props.value, visible: false });
       if (this.props.onFinished) {
         this.props.onFinished();
       }
@@ -52,7 +52,7 @@ export default class VisiblePassword extends React.PureComponent {
   handleEditingFinished(e) {
     if (e) {
       let currentTarget = e.currentTarget;
-      setTimeout(_ => {
+      setTimeout((_) => {
         if (!currentTarget.contains(document.activeElement)) {
           if (this.props.onFinished) {
             this.props.onFinished(this.state.value);
@@ -66,20 +66,26 @@ export default class VisiblePassword extends React.PureComponent {
 
   render() {
     return (
-      <div tabIndex="-1" className="group-focus" onBlur={this.handleEditingFinished}>
-        <input className="with-visibility"
+      <div
+        tabIndex="-1"
+        className="group-focus"
+        onBlur={this.handleEditingFinished}
+      >
+        <input
+          className="with-visibility"
           type={this.state.visible ? "text" : "password"}
           value={this.state.value}
           placeholder={this.props.placeholder}
-          required={this.props.required ? 'required' : ''}
-          autoFocus={this.props.autoFocus ? 'autoFocus' : ''}
+          required={this.props.required ? "required" : ""}
+          autoFocus={this.props.autoFocus ? "autoFocus" : ""}
           autoComplete={this.props.autoComplete}
           onChange={this.handeTextChange}
           onKeyDown={this.handleKeyDown}
-          ref={this.inputRef} />
+          ref={this.inputRef}
+        />
         <span onClick={this.handleVisibility}>
           <i className="material-icons clickable light-gray">
-            {this.state.visible ? 'visibility' : 'visibility_off'}
+            {this.state.visible ? "visibility" : "visibility_off"}
           </i>
         </span>
       </div>

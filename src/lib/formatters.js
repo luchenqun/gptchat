@@ -1,46 +1,46 @@
-import React from 'react';
-import { defineMessages } from 'react-intl';
+import React from "react";
+import { defineMessages } from "react-intl";
 
-import { Drafty } from 'tinode-sdk';
+import { Drafty } from "tinode-sdk";
 
-import AudioPlayer from '../widgets/audio-player.jsx'
-import CallMessage from '../widgets/call-message.jsx'
-import CallStatus from '../widgets/call-status.jsx';
-import InlineVideo from '../widgets/inline-video.jsx';
-import LazyImage from '../widgets/lazy-image.jsx'
-import UploadingImage from '../widgets/uploading-image.jsx'
+import AudioPlayer from "../widgets/audio-player.jsx";
+import CallMessage from "../widgets/call-message.jsx";
+import CallStatus from "../widgets/call-status.jsx";
+import InlineVideo from "../widgets/inline-video.jsx";
+import LazyImage from "../widgets/lazy-image.jsx";
+import UploadingImage from "../widgets/uploading-image.jsx";
 
-import { BROKEN_IMAGE_SIZE, IMAGE_THUMBNAIL_DIM, NO_DIMENSIONS_VIDEO, REM_SIZE, VIDEO_THUMBNAIL_WIDTH } from '../config.js';
-import { base64ToBlob, blobToBase64, fitImageSize, imageScaled } from './blob-helpers.js';
-import { idToColorClass, secondsToTime, shortenFileName } from './strformat.js';
-import { cancelablePromise, sanitizeUrlForMime } from './utils.js';
+import { BROKEN_IMAGE_SIZE, IMAGE_THUMBNAIL_DIM, NO_DIMENSIONS_VIDEO, REM_SIZE, VIDEO_THUMBNAIL_WIDTH } from "../config.js";
+import { base64ToBlob, blobToBase64, fitImageSize, imageScaled } from "./blob-helpers.js";
+import { idToColorClass, secondsToTime, shortenFileName } from "./strformat.js";
+import { cancelablePromise, sanitizeUrlForMime } from "./utils.js";
 
 const messages = defineMessages({
   drafty_form: {
-    id: 'drafty_form',
-    defaultMessage: 'Form: ',
-    description: 'Comment for form in Drafty'
+    id: "drafty_form",
+    defaultMessage: "Form: ",
+    description: "Comment for form in Drafty",
   },
   drafty_attachment: {
-    id: 'drafty_attachment',
-    defaultMessage: 'Attachment',
-    description: 'Comment for attachment in Drafty'
+    id: "drafty_attachment",
+    defaultMessage: "Attachment",
+    description: "Comment for attachment in Drafty",
   },
   drafty_image: {
-    id: 'drafty_image',
-    defaultMessage: 'Picture',
-    description: 'Comment for embedded images in Drafty'
+    id: "drafty_image",
+    defaultMessage: "Picture",
+    description: "Comment for embedded images in Drafty",
   },
   drafty_video: {
-    id: 'drafty_video',
-    defaultMessage: 'Video recording',
-    description: 'Comment for videos embedded in Drafty'
+    id: "drafty_video",
+    defaultMessage: "Video recording",
+    description: "Comment for videos embedded in Drafty",
   },
   drafty_unknown: {
-    id: 'drafty_unknown',
-    defaultMessage: 'Unsupported',
-    description: 'Unsupported entity in drafty'
-  }
+    id: "drafty_unknown",
+    defaultMessage: "Unsupported",
+    description: "Unsupported entity in drafty",
+  },
 });
 
 // The main Drafty formatter: converts Drafty elements into React classes. 'this' is set by the caller.
@@ -52,7 +52,7 @@ const messages = defineMessages({
 //    onFormButtonClick:
 //    onQuoteClick:
 export function fullFormatter(style, data, values, key, stack) {
-  if (stack.includes('QQ')) {
+  if (stack.includes("QQ")) {
     return quoteFormatter.call(this, style, data, values, key);
   }
 
@@ -65,70 +65,70 @@ export function fullFormatter(style, data, values, key, stack) {
   let attr = Drafty.attrValue(style, data) || {};
   attr.key = key;
   switch (style) {
-    case 'AU':
+    case "AU":
       // Show audio player.
       if (attr.src) {
-        attr.src = this.authorizeURL(sanitizeUrlForMime(attr.src, 'audio'));
-        attr.duration = data.duration > 0 ? (data.duration | 0) : undefined;
+        attr.src = this.authorizeURL(sanitizeUrlForMime(attr.src, "audio"));
+        attr.duration = data.duration > 0 ? data.duration | 0 : undefined;
         attr.preview = data.preview;
-        attr.loading = 'lazy';
+        attr.loading = "lazy";
       }
       el = AudioPlayer;
       // Audio element cannot have content.
       values = null;
       break;
-    case 'BR':
+    case "BR":
       values = null;
       break;
-    case 'EX':
+    case "EX":
       // Ignore.
       break;
-    case 'HL':
+    case "HL":
       // Highlighted text. Assign class name.
-      attr.className = 'highlight';
+      attr.className = "highlight";
       break;
-    case 'HD':
+    case "HD":
       el = null;
       values = null;
       break;
-    case 'IM':
+    case "IM":
       // Additional processing for images
       el = handleImageData.call(this, el, data, attr);
       // Image element cannot have content.
       values = null;
       break;
-    case 'BN':
+    case "BN":
       // Button
       attr.onClick = this.onFormButtonClick;
       let inner = React.Children.map(values, (child) => {
-        return typeof child == 'string' ? child : undefined;
+        return typeof child == "string" ? child : undefined;
       });
       if (!inner || inner.length == 0) {
-        inner = [attr.name]
+        inner = [attr.name];
       }
       // Get text which will be sent back when the button is clicked.
-      attr['data-title'] = inner.join('');
+      attr["data-title"] = inner.join("");
       break;
-    case 'MN':
+    case "MN":
       // Mention
-      attr.className = 'mention'
+      attr.className = "mention";
       if (data) {
-        attr.className += ' ' + idToColorClass(data.val, false, true);
+        attr.className += " " + idToColorClass(data.val, false, true);
       }
       break;
-    case 'FM':
+    case "FM":
       // Form
-      attr.className = 'bot-form';
+      attr.className = "bot-form";
       break;
-    case 'RW':
+    case "RW":
       // Form element formatting is dependent on element content.
       break;
-    case 'QQ':
+    case "QQ":
       // Quote/citation.
-      attr.className = 'reply-quote'
+      attr.className = "reply-quote";
       attr.onClick = this.onQuoteClick;
       break;
-    case 'VC':
+    case "VC":
       el = CallMessage;
       // Video call messages do not have content.
       values = null;
@@ -138,7 +138,7 @@ export function fullFormatter(style, data, values, key, stack) {
         attr.duration = data.duration;
       }
       break;
-    case 'VD':
+    case "VD":
       // Additional processing for videos.
       el = handleVideoData.call(this, el, data, attr);
       // Video element cannot have content.
@@ -148,13 +148,22 @@ export function fullFormatter(style, data, values, key, stack) {
       if (!el) {
         // Unknown element.
         el = React.Fragment;
-        attr = {key: key};
+        attr = { key: key };
         // Generate comment for unknown element.
         let body = values;
-        if (!Array.isArray(values) || !values.join('').trim()) {
-          body = [<span key="x1" className="gray">{this.formatMessage(messages.drafty_unknown)}</span>];
+        if (!Array.isArray(values) || !values.join("").trim()) {
+          body = [
+            <span key="x1" className="gray">
+              {this.formatMessage(messages.drafty_unknown)}
+            </span>,
+          ];
         }
-        values = [<i key="x0" className="material-icons gray">extension</i>, ' '].concat(body);
+        values = [
+          <i key="x0" className="material-icons gray">
+            extension
+          </i>,
+          " ",
+        ].concat(body);
       }
       break;
   }
@@ -167,36 +176,33 @@ export function fullFormatter(style, data, values, key, stack) {
 // Additional processing of image data.
 function handleImageData(el, data, attr) {
   if (!data) {
-    attr.src = 'img/broken_image.png';
+    attr.src = "img/broken_image.png";
     attr.style = {
-      width: IMAGE_THUMBNAIL_DIM + 'px',
-      height: IMAGE_THUMBNAIL_DIM + 'px',
+      width: IMAGE_THUMBNAIL_DIM + "px",
+      height: IMAGE_THUMBNAIL_DIM + "px",
     };
     return el;
   }
 
-  attr.className = 'inline-image';
-  const dim = fitImageSize(data.width, data.height,
-    this.viewportWidth > 0 ? Math.min(this.viewportWidth - REM_SIZE * 6.5, REM_SIZE * 34.5) :
-      REM_SIZE * 34.5, REM_SIZE * 24, false) ||
-      {dstWidth: BROKEN_IMAGE_SIZE, dstHeight: BROKEN_IMAGE_SIZE};
+  attr.className = "inline-image";
+  const dim = fitImageSize(data.width, data.height, this.viewportWidth > 0 ? Math.min(this.viewportWidth - REM_SIZE * 6.5, REM_SIZE * 34.5) : REM_SIZE * 34.5, REM_SIZE * 24, false) || { dstWidth: BROKEN_IMAGE_SIZE, dstHeight: BROKEN_IMAGE_SIZE };
   attr.style = {
-    width: dim.dstWidth + 'px',
-    height: dim.dstHeight + 'px',
+    width: dim.dstWidth + "px",
+    height: dim.dstHeight + "px",
     // Looks like a Chrome bug: broken image does not respect 'width' and 'height'.
-    minWidth: dim.dstWidth + 'px',
-    minHeight: dim.dstHeight + 'px'
+    minWidth: dim.dstWidth + "px",
+    minHeight: dim.dstHeight + "px",
   };
   if (!Drafty.isProcessing(data)) {
-    attr.src = this.authorizeURL(sanitizeUrlForMime(attr.src, 'image'));
+    attr.src = this.authorizeURL(sanitizeUrlForMime(attr.src, "image"));
     attr.alt = data.name;
     if (attr.src) {
       if (Math.max(data.width || 0, data.height || 0) > IMAGE_THUMBNAIL_DIM) {
         // Allow previews for large enough images.
         attr.onClick = this.onImagePreview;
-        attr.className += ' image-clickable';
+        attr.className += " image-clickable";
       }
-      attr.loading = 'lazy';
+      attr.loading = "lazy";
     } else {
       attr.src = null;
     }
@@ -211,31 +217,28 @@ function handleImageData(el, data, attr) {
 // Additional processing of image data.
 function handleVideoData(el, data, attr) {
   if (!data) {
-    attr.src = 'img/broken_video.png';
+    attr.src = "img/broken_video.png";
     attr.style = {
-      width: IMAGE_THUMBNAIL_DIM + 'px',
-      height: IMAGE_THUMBNAIL_DIM + 'px',
+      width: IMAGE_THUMBNAIL_DIM + "px",
+      height: IMAGE_THUMBNAIL_DIM + "px",
     };
     return el;
   }
-  attr.className = 'inline-image';
-  const dim = fitImageSize(data.width, data.height,
-    this.viewportWidth > 0 ? Math.min(this.viewportWidth - REM_SIZE * 6.5, REM_SIZE * 34.5) :
-      REM_SIZE * 34.5, REM_SIZE * 24, false) ||
-      {dstWidth: NO_DIMENSIONS_VIDEO, dstHeight: NO_DIMENSIONS_VIDEO};
+  attr.className = "inline-image";
+  const dim = fitImageSize(data.width, data.height, this.viewportWidth > 0 ? Math.min(this.viewportWidth - REM_SIZE * 6.5, REM_SIZE * 34.5) : REM_SIZE * 34.5, REM_SIZE * 24, false) || { dstWidth: NO_DIMENSIONS_VIDEO, dstHeight: NO_DIMENSIONS_VIDEO };
   attr.style = {
-    width: dim.dstWidth + 'px',
-    height: dim.dstHeight + 'px',
+    width: dim.dstWidth + "px",
+    height: dim.dstHeight + "px",
     // Looks like a Chrome bug: broken image does not respect 'width' and 'height'.
-    minWidth: dim.dstWidth + 'px',
-    minHeight: dim.dstHeight + 'px'
+    minWidth: dim.dstWidth + "px",
+    minHeight: dim.dstHeight + "px",
   };
   if (!Drafty.isProcessing(data)) {
-    attr.src = this.authorizeURL(sanitizeUrlForMime(attr.src, 'image'));
+    attr.src = this.authorizeURL(sanitizeUrlForMime(attr.src, "image"));
     attr.alt = data.name;
     if (data.ref || data.val) {
       attr.onClick = this.onVideoPreview;
-      attr.loading = 'lazy';
+      attr.loading = "lazy";
     }
     el = InlineVideo;
   } else {
@@ -259,45 +262,61 @@ export function previewFormatter(style, data, values, key) {
   let el = Drafty.tagName(style);
   const attr = { key: key };
   switch (style) {
-    case 'AU':
+    case "AU":
       // Voicemail as '[mic] 0:00'.
       el = React.Fragment;
-      values = [<i key="au" className="material-icons">mic</i>, ' ', secondsToTime(data.duration/1000)];
+      values = [
+        <i key="au" className="material-icons">
+          mic
+        </i>,
+        " ",
+        secondsToTime(data.duration / 1000),
+      ];
       break;
-    case 'BR':
+    case "BR":
       // Replace new line with a space.
       el = React.Fragment;
-      values = [' '];
+      values = [" "];
       break;
-    case 'HL':
+    case "HL":
       // Make highlight less prominent in preview.
-      attr.className = 'highlight preview';
+      attr.className = "highlight preview";
       break;
-    case 'LN':
-    case 'MN':
+    case "LN":
+    case "MN":
       // Disable links in previews.
-      el = 'span';
+      el = "span";
       break;
-    case 'IM':
+    case "IM":
       // Replace image with '[icon] Image'.
       el = React.Fragment;
-      values = [<i key="im" className="material-icons">photo</i>, ' ', this.formatMessage(messages.drafty_image)];
+      values = [
+        <i key="im" className="material-icons">
+          photo
+        </i>,
+        " ",
+        this.formatMessage(messages.drafty_image),
+      ];
       break;
-    case 'BN':
-      el = 'span';
-      attr.className = 'flat-button faux';
+    case "BN":
+      el = "span";
+      attr.className = "flat-button faux";
       break;
-    case 'FM':
+    case "FM":
       el = React.Fragment;
-      values = [<i key="fm" className="material-icons">dashboard</i>,
-        this.formatMessage(messages.drafty_form)].concat(' ', values || []);
+      values = [
+        <i key="fm" className="material-icons">
+          dashboard
+        </i>,
+        this.formatMessage(messages.drafty_form),
+      ].concat(" ", values || []);
       break;
-    case 'RW':
+    case "RW":
       el = React.Fragment;
       break;
-    case 'EX':
+    case "EX":
       if (data) {
-        if (data.mime == 'application/json') {
+        if (data.mime == "application/json") {
           // Ignore JSON attachments: they are form response payloads.
           return null;
         }
@@ -306,9 +325,15 @@ export function previewFormatter(style, data, values, key) {
         delete data.ref;
       }
       el = React.Fragment;
-      values = [<i key="ex" className="material-icons">attachment</i>, ' ', this.formatMessage(messages.drafty_attachment)];
+      values = [
+        <i key="ex" className="material-icons">
+          attachment
+        </i>,
+        " ",
+        this.formatMessage(messages.drafty_attachment),
+      ];
       break;
-    case 'VC':
+    case "VC":
       el = CallStatus;
       if (data) {
         attr.callState = data.state;
@@ -317,21 +342,33 @@ export function previewFormatter(style, data, values, key) {
       }
       values = null;
       break;
-    case 'QQ':
-    case 'HD':
+    case "QQ":
+    case "HD":
       el = null;
       values = null;
       break;
-    case 'VD':
+    case "VD":
       // Replace image with '[icon] Video'.
       el = React.Fragment;
-      values = [<i key="im" className="material-icons">play_circle_outline</i>, ' ', this.formatMessage(messages.drafty_video)];
+      values = [
+        <i key="im" className="material-icons">
+          play_circle_outline
+        </i>,
+        " ",
+        this.formatMessage(messages.drafty_video),
+      ];
       break;
     default:
       if (!el) {
         // Unknown element.
         el = React.Fragment;
-        values = [<i key="x0" className="material-icons gray">extension</i>, ' ', this.formatMessage(messages.drafty_unknown)];
+        values = [
+          <i key="x0" className="material-icons gray">
+            extension
+          </i>,
+          " ",
+          this.formatMessage(messages.drafty_unknown),
+        ];
       }
       break;
   }
@@ -339,22 +376,22 @@ export function previewFormatter(style, data, values, key) {
     return values;
   }
   return React.createElement(el, attr, values);
-};
+}
 
 // Converts Drafty object into a quoted reply; 'this' is set by the caller.
 function inlineImageAttr(attr, data) {
   attr.style = {
-    width: IMAGE_THUMBNAIL_DIM + 'px',
-    height: IMAGE_THUMBNAIL_DIM + 'px',
-    maxWidth: IMAGE_THUMBNAIL_DIM + 'px',
-    maxHeight: IMAGE_THUMBNAIL_DIM + 'px',
-  }
-  attr.className = 'inline-image';
+    width: IMAGE_THUMBNAIL_DIM + "px",
+    height: IMAGE_THUMBNAIL_DIM + "px",
+    maxWidth: IMAGE_THUMBNAIL_DIM + "px",
+    maxHeight: IMAGE_THUMBNAIL_DIM + "px",
+  };
+  attr.className = "inline-image";
   attr.alt = this.formatMessage(messages.drafty_image);
   if (!data) {
-    attr.src = 'img/broken_image.png';
+    attr.src = "img/broken_image.png";
   } else {
-    attr.src = attr.src || 'img/broken_image.png';
+    attr.src = attr.src || "img/broken_image.png";
   }
   attr.title = attr.alt;
   return attr;
@@ -364,18 +401,18 @@ function inlineImageAttr(attr, data) {
 function inlineVideoAttr(attr, data) {
   const dim = fitImageSize(data.width, data.height, VIDEO_THUMBNAIL_WIDTH, IMAGE_THUMBNAIL_DIM);
   attr.style = {
-    width: dim.width + 'px',
-    height: dim.height + 'px',
-    maxWidth: VIDEO_THUMBNAIL_WIDTH + 'px',
-    maxHeight: IMAGE_THUMBNAIL_DIM + 'px',
-  }
-  attr.className = 'inline-image';
+    width: dim.width + "px",
+    height: dim.height + "px",
+    maxWidth: VIDEO_THUMBNAIL_WIDTH + "px",
+    maxHeight: IMAGE_THUMBNAIL_DIM + "px",
+  };
+  attr.className = "inline-image";
   attr.alt = this.formatMessage(messages.drafty_video);
   attr.title = attr.alt;
   if (!data) {
-    attr.src = 'img/broken_video.png';
+    attr.src = "img/broken_video.png";
   } else {
-    attr.src = attr.src || 'img/broken_video.png';
+    attr.src = attr.src || "img/broken_video.png";
   }
   return attr;
 }
@@ -387,39 +424,39 @@ function inlineVideoAttr(attr, data) {
 //    authorizeURL: this.props.tinode.authorizeURL
 //    onQuoteClick: this.handleQuoteClick (optional)
 function quoteFormatter(style, data, values, key) {
-  if (['BR', 'EX', 'IM', 'MN', 'VD'].includes(style)) {
+  if (["BR", "EX", "IM", "MN", "VD"].includes(style)) {
     let el = Drafty.tagName(style);
     let attr = Drafty.attrValue(style, data) || {};
     attr.key = key;
-    switch(style) {
-      case 'BR':
+    switch (style) {
+      case "BR":
         values = null;
         break;
-      case 'IM':
+      case "IM":
         attr = inlineImageAttr.call(this, attr, data);
-        values = [React.createElement('img', attr, null), ' ', attr.alt];
+        values = [React.createElement("img", attr, null), " ", attr.alt];
         el = React.Fragment;
         // Fragment attributes.
-        attr = {key: key};
+        attr = { key: key };
         break;
-      case 'VD':
+      case "VD":
         attr = inlineVideoAttr.call(this, attr, data);
-        values = [React.createElement('img', attr, null), ' ', attr.alt];
+        values = [React.createElement("img", attr, null), " ", attr.alt];
         el = React.Fragment;
         // Fragment attributes.
-        attr = {key: key};
+        attr = { key: key };
         break;
-      case 'MN':
-        el = 'span';
-        attr.className = 'mention'
+      case "MN":
+        el = "span";
+        attr.className = "mention";
         if (data) {
-          attr.className += ' ' + idToColorClass(data.val, false, true);
+          attr.className += " " + idToColorClass(data.val, false, true);
         }
         break;
-      case 'EX':
+      case "EX":
         let fname;
         if (data) {
-          if (data.mime == 'application/json') {
+          if (data.mime == "application/json") {
             // Ignore JSON attachments: they are form response payloads.
             return null;
           }
@@ -429,8 +466,12 @@ function quoteFormatter(style, data, values, key) {
           delete data.ref;
         }
         el = React.Fragment;
-        values = [<i key="ex" className="material-icons">attachment</i>,
-          shortenFileName(fname, 16) || this.formatMessage(messages.drafty_attachment)];
+        values = [
+          <i key="ex" className="material-icons">
+            attachment
+          </i>,
+          shortenFileName(fname, 16) || this.formatMessage(messages.drafty_attachment),
+        ];
         break;
     }
     return React.createElement(el, attr, values);
@@ -444,7 +485,7 @@ function quoteImageOrVideo(data, isVideo) {
   let bits, ref, mime;
   if (isVideo) {
     bits = data.preview;
-    mime = data.premime || 'image/jpeg';
+    mime = data.premime || "image/jpeg";
     ref = data.preref;
   } else {
     bits = data.val;
@@ -459,25 +500,25 @@ function quoteImageOrVideo(data, isVideo) {
     }
     promise = Promise.resolve(blob);
   } else if (ref) {
-    promise = fetch(this.authorizeURL(sanitizeUrlForMime(ref, 'image')))
-      .then(evt => {
-        if (evt.ok) {
-          return evt.blob();
-        } else {
-          throw new Error(`Image fetch unsuccessful: ${evt.status} ${evt.statusText}`);
-        }
-      });
+    promise = fetch(this.authorizeURL(sanitizeUrlForMime(ref, "image"))).then((evt) => {
+      if (evt.ok) {
+        return evt.blob();
+      } else {
+        throw new Error(`Image fetch unsuccessful: ${evt.status} ${evt.statusText}`);
+      }
+    });
   } else {
     throw new Error("Missing image data");
   }
 
   // Scale the blob.
   return promise
-    .then(blob => {
+    .then((blob) => {
       // If it's an image, cut the square from the center of the image and shrink it.
       // If it's a video, allow it to be rectantular.
-      return imageScaled(blob, isVideo ? VIDEO_THUMBNAIL_WIDTH : IMAGE_THUMBNAIL_DIM, IMAGE_THUMBNAIL_DIM, -1, !isVideo)
-    }).then(scaled => {
+      return imageScaled(blob, isVideo ? VIDEO_THUMBNAIL_WIDTH : IMAGE_THUMBNAIL_DIM, IMAGE_THUMBNAIL_DIM, -1, !isVideo);
+    })
+    .then((scaled) => {
       if (isVideo) {
         data.premime = scaled.mime;
       } else {
@@ -492,14 +533,16 @@ function quoteImageOrVideo(data, isVideo) {
 
       data.src = URL.createObjectURL(scaled.blob);
       return blobToBase64(scaled.blob);
-    }).then(b64 => {
+    })
+    .then((b64) => {
       if (isVideo) {
         data.preview = b64.bits;
       } else {
         data.val = b64.bits;
       }
       return data;
-    }).catch(err => {
+    })
+    .catch((err) => {
       delete data.val;
       delete data.preview;
       delete data.src;
@@ -512,32 +555,35 @@ function quoteImageOrVideo(data, isVideo) {
 
 // Create a preview of a reply.
 export function replyFormatter(style, data, values, key, stack) {
-  if (style == 'IM' || style == 'VD') {
-    const isImage = style == 'IM';
-    const attr = isImage ? inlineImageAttr.call(this, {key: key}, data) :
-      inlineVideoAttr.call(this, {key: key}, data);
+  if (style == "IM" || style == "VD") {
+    const isImage = style == "IM";
+    const attr = isImage ? inlineImageAttr.call(this, { key: key }, data) : inlineVideoAttr.call(this, { key: key }, data);
 
     let loadedPromise;
     try {
-      loadedPromise = cancelablePromise(quoteImageOrVideo.call(this, data, style == 'VD'));
+      loadedPromise = cancelablePromise(quoteImageOrVideo.call(this, data, style == "VD"));
     } catch (error) {
       console.warn("Failed to quote image:", error.message);
       loadedPromise = cancelablePromise(error);
     }
     attr.whenDone = loadedPromise;
-    values = [React.createElement(LazyImage, attr, null), ' ', attr.alt];
-    return React.createElement(React.Fragment, {key: key}, values);
-  } else if (style == 'QQ') {
-    if (stack.includes('QQ')) {
+    values = [React.createElement(LazyImage, attr, null), " ", attr.alt];
+    return React.createElement(React.Fragment, { key: key }, values);
+  } else if (style == "QQ") {
+    if (stack.includes("QQ")) {
       // Quote inside quote when forwarding a message.
-      return React.createElement('span', {key: key},
-        [<i key="qq" className="material-icons">format_quote</i>, ' ']);
+      return React.createElement("span", { key: key }, [
+        <i key="qq" className="material-icons">
+          format_quote
+        </i>,
+        " ",
+      ]);
     }
 
-    const attr = Drafty.attrValue('QQ', data) || {};
+    const attr = Drafty.attrValue("QQ", data) || {};
     attr.key = key;
-    attr.className = 'reply-quote'
-    return React.createElement(Drafty.tagName('QQ'), attr, values);
+    attr.className = "reply-quote";
+    return React.createElement(Drafty.tagName("QQ"), attr, values);
   }
   return quoteFormatter.call(this, style, data, values, key);
 }

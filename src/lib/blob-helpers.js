@@ -1,18 +1,18 @@
 // File and image helper functions.
 
 // Supported image MIME types and corresponding file extensions.
-export const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/gif', 'image/png', 'image/svg', 'image/svg+xml'];
-export const MIME_EXTENSIONS         = ['jpg',        'gif',       'png',       'svg',       'svg'];
+export const SUPPORTED_IMAGE_FORMATS = ["image/jpeg", "image/gif", "image/png", "image/svg", "image/svg+xml"];
+export const MIME_EXTENSIONS = ["jpg", "gif", "png", "svg", "svg"];
 
 // Get an URL from a theCard photo: either create a data: URL or return reference URL.
 export function makeImageUrl(photo) {
-  if (photo && typeof photo == 'object') {
+  if (photo && typeof photo == "object") {
     if (photo.ref) {
-      return photo.ref
+      return photo.ref;
     }
     if (photo.data && photo.type) {
-      const mime = photo.type.startsWith('image/') ? photo.type : ('image/' + photo.type);
-      return 'data:' + mime + ';base64,' + photo.data;
+      const mime = photo.type.startsWith("image/") ? photo.type : "image/" + photo.type;
+      return "data:" + mime + ";base64," + photo.data;
     }
   }
   return null;
@@ -36,10 +36,7 @@ export function fitImageSize(width, height, maxWidth, maxHeight, forceSquare) {
     maxWidth = maxHeight = Math.min(maxWidth, maxHeight);
   }
 
-  const scale = Math.min(
-    Math.min(width, maxWidth) / width,
-    Math.min(height, maxHeight) / height
-  );
+  const scale = Math.min(Math.min(width, maxWidth) / width, Math.min(height, maxHeight) / height);
 
   const size = {
     dstWidth: (width * scale) | 0,
@@ -69,11 +66,11 @@ export function fileNameForMime(fname, mime) {
   }
   const ext = MIME_EXTENSIONS[idx];
 
-  const at = fname.lastIndexOf('.');
+  const at = fname.lastIndexOf(".");
   if (at >= 0) {
     fname = fname.substring(0, at);
   }
-  return fname + '.' + ext;
+  return fname + "." + ext;
 }
 
 // Scale uploaded image to fit under certain dimensions and byte size, optionally constraining to a square.
@@ -81,11 +78,11 @@ export function fileNameForMime(fname, mime) {
 export function imageScaled(fileOrBlob, maxWidth, maxHeight, maxSize, forceSquare) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.onerror = function(err) {
+    img.crossOrigin = "Anonymous";
+    img.onerror = function (err) {
       reject(new Error("Image format unrecognized"));
-    }
-    img.onload = async function() {
+    };
+    img.onload = async function () {
       // Once the image is loaded, the URL is no longer needed.
       URL.revokeObjectURL(img.src);
 
@@ -95,17 +92,16 @@ export function imageScaled(fileOrBlob, maxWidth, maxHeight, maxSize, forceSquar
         reject(new Error("Invalid image"));
         return;
       }
-      let canvas = document.createElement('canvas');
+      let canvas = document.createElement("canvas");
       canvas.width = dim.dstWidth;
       canvas.height = dim.dstHeight;
-      let ctx = canvas.getContext('2d');
+      let ctx = canvas.getContext("2d");
       ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(img, dim.xoffset, dim.yoffset, dim.srcWidth, dim.srcHeight,
-        0, 0, dim.dstWidth, dim.dstHeight);
+      ctx.drawImage(img, dim.xoffset, dim.yoffset, dim.srcWidth, dim.srcHeight, 0, 0, dim.dstWidth, dim.dstHeight);
 
-      const mime = SUPPORTED_IMAGE_FORMATS.includes(fileOrBlob.type) ? fileOrBlob.type : 'image/jpeg';
+      const mime = SUPPORTED_IMAGE_FORMATS.includes(fileOrBlob.type) ? fileOrBlob.type : "image/jpeg";
       // Generate blob to check size of the image.
-      let blob = await new Promise(resolve => canvas.toBlob(resolve, mime));
+      let blob = await new Promise((resolve) => canvas.toBlob(resolve, mime));
       if (!blob) {
         reject(new Error("Unsupported image format"));
         return;
@@ -117,15 +113,14 @@ export function imageScaled(fileOrBlob, maxWidth, maxHeight, maxSize, forceSquar
         dim.dstHeight = (dim.dstHeight * 0.70710678118) | 0;
         canvas.width = dim.dstWidth;
         canvas.height = dim.dstHeight;
-        ctx = canvas.getContext('2d');
+        ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, dim.xoffset, dim.yoffset, dim.srcWidth, dim.srcHeight,
-          0, 0, dim.dstWidth, dim.dstHeight);
-        blob = await new Promise(resolve => canvas.toBlob(resolve, mime));
+        ctx.drawImage(img, dim.xoffset, dim.yoffset, dim.srcWidth, dim.srcHeight, 0, 0, dim.dstWidth, dim.dstHeight);
+        blob = await new Promise((resolve) => canvas.toBlob(resolve, mime));
       }
 
       canvas = null;
-      resolve({mime: mime, blob: blob, width: dim.dstWidth, height: dim.dstHeight, name: fileNameForMime(fileOrBlob.name, mime)});
+      resolve({ mime: mime, blob: blob, width: dim.dstWidth, height: dim.dstHeight, name: fileNameForMime(fileOrBlob.name, mime) });
     };
     img.src = URL.createObjectURL(fileOrBlob);
   });
@@ -137,28 +132,28 @@ export function imageScaled(fileOrBlob, maxWidth, maxHeight, maxSize, forceSquar
 export function imageCrop(mime, objURL, left, top, width, height, scale) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.onerror = _ => {
+    img.crossOrigin = "Anonymous";
+    img.onerror = (_) => {
       reject(new Error("Image format unrecognized"));
     };
-    img.onload = _ => {
+    img.onload = (_) => {
       // Once the image is loaded, the URL is no longer needed.
       URL.revokeObjectURL(img.src);
 
-      let canvas = document.createElement('canvas');
+      let canvas = document.createElement("canvas");
       canvas.width = width * scale;
       canvas.height = height * scale;
-      let ctx = canvas.getContext('2d');
+      let ctx = canvas.getContext("2d");
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(img, left, top, width, height, 0, 0, canvas.width, canvas.height);
 
-      mime = SUPPORTED_IMAGE_FORMATS.includes(mime) ? mime : 'image/jpeg';
+      mime = SUPPORTED_IMAGE_FORMATS.includes(mime) ? mime : "image/jpeg";
       // Generate blob to check size of the image.
       canvas.toBlob((blob) => {
         // Allow GC.
         canvas = null;
         if (blob) {
-          resolve({mime: mime, blob: blob, width: width, height: height});
+          resolve({ mime: mime, blob: blob, width: width, height: height });
         } else {
           reject(new Error("Unsupported image format"));
         }
@@ -172,11 +167,11 @@ export function imageCrop(mime, objURL, left, top, width, height, scale) {
 export function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = _ => {
+    reader.onerror = (_) => {
       reject(reader.error);
     };
-    reader.onload = _ => {
-      resolve({mime: file.type, bits: reader.result.split(',')[1], name: file.name});
+    reader.onload = (_) => {
+      resolve({ mime: file.type, bits: reader.result.split(",")[1], name: file.name });
     };
     reader.readAsDataURL(file);
   });
@@ -186,11 +181,11 @@ export function fileToBase64(file) {
 export function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = _ => {
+    reader.onerror = (_) => {
       reject(reader.error);
     };
-    reader.onload = _ => {
-      resolve({mime: blob.type, bits: reader.result.split(',')[1]});
+    reader.onload = (_) => {
+      resolve({ mime: blob.type, bits: reader.result.split(",")[1] });
     };
     reader.readAsDataURL(blob);
   });
@@ -205,14 +200,14 @@ export function filePasted(event, onImageSuccess, onAttachmentSuccess, onError) 
 
   for (let i in items) {
     const item = items[i];
-    if (item.kind === 'file') {
+    if (item.kind === "file") {
       const file = item.getAsFile();
       if (!file) {
         console.error("Failed to get file object from pasted file item", item.kind, item.type);
         onError("Failed to get file object from pasted file item");
         continue;
       }
-      if (file.type && file.type.split('/')[0] == 'image') {
+      if (file.type && file.type.split("/")[0] == "image") {
         onImageSuccess(file);
       } else {
         onAttachmentSuccess(file);
@@ -228,7 +223,7 @@ export function filePasted(event, onImageSuccess, onAttachmentSuccess, onError) 
 // Get mime type from data URL header.
 export function getMimeType(header) {
   var mime = /^data:(image\/[-+a-z0-9.]+);base64/.exec(header);
-  return (mime && mime.length > 1) ? mime[1] : null;
+  return mime && mime.length > 1 ? mime[1] : null;
 }
 
 // Given length of a binary object in bytes, calculate the length after
@@ -247,10 +242,10 @@ export function base64DecodedLen(n) {
 // The string may be base64-URL encoded without the padding.
 export function base64ReEncode(str) {
   if (str) {
-    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    str = str.replace(/-/g, "+").replace(/_/g, "/");
     try {
       str = btoa(atob(str));
-    } catch(err) {
+    } catch (err) {
       console.error("Failed to base64 re-encode string.", err);
       str = null;
     }
@@ -275,7 +270,7 @@ export function base64ToBlob(str, mime) {
     }
 
     return new Blob([buf], { type: mime });
-  } catch(err) {
+  } catch (err) {
     console.error("Failed to convert base64 to blob: ", err);
   }
 
@@ -287,8 +282,8 @@ export function intArrayToBase64(arr) {
     return null;
   }
   try {
-    let bin = '';
-    new Uint8Array(arr).forEach(b => bin += String.fromCharCode(b));
+    let bin = "";
+    new Uint8Array(arr).forEach((b) => (bin += String.fromCharCode(b)));
     return window.btoa(bin);
   } catch (err) {}
   return null;
@@ -297,8 +292,8 @@ export function intArrayToBase64(arr) {
 export function base64ToIntArray(b64) {
   const arr = [];
   try {
-    const bin =  window.atob(b64);
-    [...bin].forEach(c => {
+    const bin = window.atob(b64);
+    [...bin].forEach((c) => {
       arr.push(c.charCodeAt(0));
     });
     return arr;

@@ -5,22 +5,22 @@ export default class HashNavigation {
   // path and arguments.
   static parseUrlHash(hash) {
     // Split path from args, path -> parts[0], args->path[1]
-    const parts = hash.split('?', 2);
+    const parts = hash.split("?", 2);
     const params = {};
     let path = [];
     if (parts[0]) {
-      path = parts[0].replace('#', '').split('/');
+      path = parts[0].replace("#", "").split("/");
     }
     if (parts[1]) {
-      parts[1].split('&').forEach((arg) => {
+      parts[1].split("&").forEach((arg) => {
         // Can't use split() because the value may contain '='.
-        const eq = arg.indexOf('=');
+        const eq = arg.indexOf("=");
         if (eq > 0) {
           params[arg.slice(0, eq)] = decodeURIComponent(arg.slice(eq + 1));
         }
       });
     }
-    return {path: path, params: params};
+    return { path: path, params: params };
   }
 
   static navigateTo(url) {
@@ -28,15 +28,15 @@ export default class HashNavigation {
   }
 
   static composeUrlHash(path, params) {
-    let url = path.join('/');
+    let url = path.join("/");
     const args = [];
     for (const key in params) {
       if (params.hasOwnProperty(key)) {
-        args.push(key + '=' + encodeURIComponent(params[key]));
+        args.push(key + "=" + encodeURIComponent(params[key]));
       }
     }
     if (args.length > 0) {
-      url += '?' + args.join('&');
+      url += "?" + args.join("&");
     }
     return url;
   }

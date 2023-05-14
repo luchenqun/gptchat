@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import LetterTile from './letter-tile.jsx';
+import LetterTile from "./letter-tile.jsx";
 
 export default class Chip extends React.PureComponent {
   constructor(props) {
@@ -16,24 +16,30 @@ export default class Chip extends React.PureComponent {
 
   render() {
     const title = this.props.title || this.props.topic;
-    const className = this.props.invalid ? 'chip invalid' : 'chip';
+    const className = this.props.invalid ? "chip invalid" : "chip";
     return (
       <div className={className}>
-        {this.props.noAvatar ?
-          <span className="spacer" /> :
+        {this.props.noAvatar ? (
+          <span className="spacer" />
+        ) : (
           <div className="avatar-box">
             <LetterTile
               tinode={this.props.tinode}
               avatar={this.props.avatar || true}
               topic={this.props.topic}
-              title={this.props.title} />
+              title={this.props.title}
+            />
           </div>
-        }
+        )}
         <span>{title}</span>
-        {this.props.onCancel && !this.props.required ?
-          <a href="#" onClick={this.handleCancel} >&times;</a>
-          : <span className="spacer" />}
+        {this.props.onCancel && !this.props.required ? (
+          <a href="#" onClick={this.handleCancel}>
+            &times;
+          </a>
+        ) : (
+          <span className="spacer" />
+        )}
       </div>
     );
   }
-};
+}

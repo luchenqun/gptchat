@@ -1,13 +1,13 @@
-import { PACKAGE_VERSION } from './version.js';
+import { PACKAGE_VERSION } from "./version.js";
 
 // Name of this application, used in the User-Agent.
-export const APP_NAME = 'TinodeWeb/' + (PACKAGE_VERSION || '0.21');
+export const APP_NAME = "GptChat/" + (PACKAGE_VERSION || "0.21");
 
-// API key. Use https://github.com/tinode/chat/tree/master/keygen to generate your own
-export const API_KEY = 'AQEAAAABAAD_rAp4DJh05a1HAwFT3A6K';
+// API key. Use https://github.com/gptchat/chat/tree/master/keygen to generate your own
+export const API_KEY = "AQEAAAABAAD_rAp4DJh05a1HAwFT3A6K";
 
 // The array of possible hosts to connect to.
-export const KNOWN_HOSTS = {hosted: 'web.tinode.co', local: 'localhost:6060'};
+export const KNOWN_HOSTS = { hosted: "web.gptchat.co", local: "localhost:6060" };
 
 // Default host name and port to connect to.
 export const DEFAULT_HOST = KNOWN_HOSTS.hosted;
@@ -28,14 +28,14 @@ export const MAX_TAG_LENGTH = 96;
 export const MAX_TAG_COUNT = 16;
 
 // Access mode for P2P subscriptions initiated by the current user.
-export const DEFAULT_P2P_ACCESS_MODE = 'JRWPS';
+export const DEFAULT_P2P_ACCESS_MODE = "JRWPS";
 // Access mode for new group topics created by the current user.
-export const NEW_GRP_ACCESS_MODE = 'JRWPSAO';
+export const NEW_GRP_ACCESS_MODE = "JRWPSAO";
 // Access mode for a channel.
-export const CHANNEL_ACCESS_MODE = 'JR';
+export const CHANNEL_ACCESS_MODE = "JR";
 
 // Access mode for no access.
-export const NO_ACCESS_MODE = 'N';
+export const NO_ACCESS_MODE = "N";
 
 // Mediaquery breakpoint between desktop and mobile, in px. Should match the value
 // in @media (max-size: 640px) in base.css
@@ -114,13 +114,13 @@ export const MIN_DURATION = 2_000;
 export const MAX_DURATION = 600_000;
 
 // Link for "Contact Us".
-export const LINK_CONTACT_US = 'mailto:support@tinode.co';
+export const LINK_CONTACT_US = "mailto:support@gptchat.co";
 
 // Link to Privacy Policy.
-export const LINK_PRIVACY_POLICY = 'https://tinode.co/privacy.html';
+export const LINK_PRIVACY_POLICY = "https://gptchat.co/privacy.html";
 
 // Link to Terms of Service.
-export const LINK_TERMS_OF_SERVICE = 'https://tinode.co/terms.html';
+export const LINK_TERMS_OF_SERVICE = "https://gptchat.co/terms.html";
 
 // When user starts a P2P topic, automatic subscription does not
 // happen until the first message. Setting this option to true enables

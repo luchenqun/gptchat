@@ -1,14 +1,14 @@
 // Edit account parameters.
-import React from 'react';
-import { FormattedMessage } from 'react-intl';
-import { parsePhoneNumber } from 'libphonenumber-js/mobile';
+import React from "react";
+import { FormattedMessage } from "react-intl";
+import { parsePhoneNumber } from "libphonenumber-js/mobile";
 
-import AvatarUpload from '../widgets/avatar-upload.jsx';
-import BadgeList from '../widgets/badge-list.jsx';
+import AvatarUpload from "../widgets/avatar-upload.jsx";
+import BadgeList from "../widgets/badge-list.jsx";
 
-import { makeImageUrl } from '../lib/blob-helpers.js';
-import { MAX_TITLE_LENGTH, MAX_TOPIC_DESCRIPTION_LENGTH } from '../config.js';
-import CredentialEdit from '../widgets/credential-edit.jsx';
+import { makeImageUrl } from "../lib/blob-helpers.js";
+import { MAX_TITLE_LENGTH, MAX_TOPIC_DESCRIPTION_LENGTH } from "../config.js";
+import CredentialEdit from "../widgets/credential-edit.jsx";
 
 function _clip(str, length) {
   return str && str.substring(0, length);
@@ -21,16 +21,20 @@ export default class AccountSettingsView extends React.Component {
     const me = this.props.tinode.getMeTopic();
     this.state = {
       fullName: _clip(me.public ? me.public.fn : undefined, MAX_TITLE_LENGTH),
-      description: _clip(me.public ? me.public.note : undefined, MAX_TOPIC_DESCRIPTION_LENGTH),
+      description: _clip(
+        me.public ? me.public.note : undefined,
+        MAX_TOPIC_DESCRIPTION_LENGTH
+      ),
       avatar: makeImageUrl(me.public ? me.public.photo : null),
       credentials: me.getCredentials() || [],
-      credEdit: undefined
+      credEdit: undefined,
     };
   }
 
   componentDidMount() {
     const me = this.props.tinode.getMeTopic();
-    me.onCredsUpdated = _ => this.setState({credentials: me.getCredentials()});
+    me.onCredsUpdated = (_) =>
+      this.setState({ credentials: me.getCredentials() });
   }
 
   componentWillUnmount() {
@@ -47,53 +51,86 @@ export default class AccountSettingsView extends React.Component {
           done={this.state.credEdit.done}
           onShowCountrySelector={this.props.onShowCountrySelector}
           onSubmit={this.props.onCredAdd}
-          onCancel={_ => this.setState({credEdit: undefined})}
-          onError={this.props.onError} />
+          onCancel={(_) => this.setState({ credEdit: undefined })}
+          onError={this.props.onError}
+        />
       );
     }
 
     const credentials = [];
     this.state.credentials.forEach((cred, idx) => {
-      if (!['email', 'tel'].includes(cred.meth)) {
+      if (!["email", "tel"].includes(cred.meth)) {
         // Skip unknown methods.
-        return ;
+        return;
       }
 
-      let val = cred.val
-      if (cred.meth == 'tel') {
+      let val = cred.val;
+      if (cred.meth == "tel") {
         const number = parsePhoneNumber(cred.val);
         val = number ? number.formatInternational() : cred.val;
       }
 
       credentials.push(
         <div className="group quoted" key={idx}>
-          <tt className="clickable" onClick={e => {e.preventDefault(); this.setState({credEdit: cred});}}>{val}</tt>
-          <span> {
-            cred.done ? null :
-            <>
-              <i className="material-icons">pending</i>&nbsp;
-              <a href="#" onClick={e => {e.preventDefault(); this.props.onCredDelete(cred.meth, cred.val);}}>
-                <i className="material-icons">delete</i>
-              </a>
-            </>
-          }</span>
-        </div>);
+          <tt
+            className="clickable"
+            onClick={(e) => {
+              e.preventDefault();
+              this.setState({ credEdit: cred });
+            }}
+          >
+            {val}
+          </tt>
+          <span>
+            {" "}
+            {cred.done ? null : (
+              <>
+                <i className="material-icons">pending</i>&nbsp;
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    this.props.onCredDelete(cred.meth, cred.val);
+                  }}
+                >
+                  <i className="material-icons">delete</i>
+                </a>
+              </>
+            )}
+          </span>
+        </div>
+      );
     });
     if (credentials.length > 0) {
       // Add title as the first element.
       credentials.unshift(
-        <label className="small" key={'title'}>
-          <FormattedMessage id="label_user_contacts" defaultMessage="Contacts"
-            description="Label for user contacts" />
-        </label>);
+        <label className="small" key={"title"}>
+          <FormattedMessage
+            id="label_user_contacts"
+            defaultMessage="Contacts"
+            description="Label for user contacts"
+          />
+        </label>
+      );
     }
 
     return (
       <div className="scrollable-panel">
         <div className="panel-form-column">
-          <a href="#" className="flat-button float-right" onClick={e => {e.preventDefault(); this.props.onNavigate('general');}}>
+          <a
+            href="#"
+            className="flat-button float-right"
+            onClick={(e) => {
+              e.preventDefault();
+              this.props.onNavigate("general");
+            }}
+          >
             <i className="material-icons">edit</i>&nbsp;
-            <FormattedMessage id="button_edit" defaultMessage="Edit" description="Call to action [Edit]" />
+            <FormattedMessage
+              id="button_edit"
+              defaultMessage="Edit"
+              description="Call to action [Edit]"
+            />
           </a>
           <center>
             <AvatarUpload
@@ -101,31 +138,45 @@ export default class AccountSettingsView extends React.Component {
               avatar={this.state.avatar}
               readOnly={true}
               uid={this.props.myUserId}
-              title={this.state.fullName} />
+              title={this.state.fullName}
+            />
           </center>
           <div className="group">
             <label className="small">
-              <FormattedMessage id="label_your_name" defaultMessage="Your name"
-                description="Label for full name editing" />
+              <FormattedMessage
+                id="label_your_name"
+                defaultMessage="Your name"
+                description="Label for full name editing"
+              />
             </label>
             <div className="large ellipsized">{this.state.fullName}</div>
           </div>
           <div className="group">
-            <label className="small"><FormattedMessage id="label_user_id" defaultMessage="ID:"
-              description="Label for user address (ID)" /></label>&nbsp;
+            <label className="small">
+              <FormattedMessage
+                id="label_user_id"
+                defaultMessage="ID:"
+                description="Label for user address (ID)"
+              />
+            </label>
+            &nbsp;
             <tt>{this.props.myUserId}</tt>
           </div>
           <div className="group">
             <BadgeList trustedBadges={this.props.trustedBadges} />
           </div>
-          {this.state.description ?
+          {this.state.description ? (
             <div className="group">
               <label className="small">
-                <FormattedMessage id="label_description" defaultMessage="Description"
-                  description="Label for editing topic description" />
+                <FormattedMessage
+                  id="label_description"
+                  defaultMessage="Description"
+                  description="Label for editing topic description"
+                />
               </label>
               <div className="quoted">{this.state.description}</div>
-            </div> : null}
+            </div>
+          ) : null}
         </div>
         <div className="hr" />
         <div className="panel-form-column">
@@ -133,20 +184,53 @@ export default class AccountSettingsView extends React.Component {
         </div>
         <div className="hr" />
         <div className="panel-form-column">
-          <a href="#" className="flat-button" onClick={e => {e.preventDefault(); this.props.onNavigate('notif');}}>
-            <i className="material-icons">notifications</i>&nbsp;<FormattedMessage id="sidepanel_title_acc_notifications"
-              defaultMessage="Notifications" description="Sidepanel title for AccNotificationsView." />
+          <a
+            href="#"
+            className="flat-button"
+            onClick={(e) => {
+              e.preventDefault();
+              this.props.onNavigate("notif");
+            }}
+          >
+            <i className="material-icons">notifications</i>&nbsp;
+            <FormattedMessage
+              id="sidepanel_title_acc_notifications"
+              defaultMessage="Notifications"
+              description="Sidepanel title for AccNotificationsView."
+            />
           </a>
-          <a href="#" className="flat-button" onClick={e => {e.preventDefault(); this.props.onNavigate('security');}}>
-            <i className="material-icons">security</i>&nbsp;<FormattedMessage id="button_security"
-              defaultMessage="Security" description="Navigaton button for security panel." />
+          <a
+            href="#"
+            className="flat-button"
+            onClick={(e) => {
+              e.preventDefault();
+              this.props.onNavigate("security");
+            }}
+          >
+            <i className="material-icons">security</i>&nbsp;
+            <FormattedMessage
+              id="button_security"
+              defaultMessage="Security"
+              description="Navigaton button for security panel."
+            />
           </a>
-          <a href="#" className="flat-button" onClick={e => {e.preventDefault(); this.props.onNavigate('support');}}>
-            <i className="material-icons">contact_support</i>&nbsp;<FormattedMessage id="sidepanel_title_acc_support"
-              defaultMessage="Support" description="Sidepanel title for AccSupportView." />
+          <a
+            href="#"
+            className="flat-button"
+            onClick={(e) => {
+              e.preventDefault();
+              this.props.onNavigate("support");
+            }}
+          >
+            <i className="material-icons">contact_support</i>&nbsp;
+            <FormattedMessage
+              id="sidepanel_title_acc_support"
+              defaultMessage="Support"
+              description="Sidepanel title for AccSupportView."
+            />
           </a>
         </div>
       </div>
     );
   }
-};
+}

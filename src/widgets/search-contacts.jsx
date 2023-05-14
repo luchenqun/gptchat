@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { Tinode } from 'tinode-sdk';
+import { Tinode } from "tinode-sdk";
 
 export default class SearchContacts extends React.PureComponent {
   constructor(props) {
@@ -8,7 +8,7 @@ export default class SearchContacts extends React.PureComponent {
 
     this.state = {
       edited: false,
-      search: ''
+      search: "",
     };
 
     this.handleSearchChange = this.handleSearchChange.bind(this);
@@ -19,19 +19,19 @@ export default class SearchContacts extends React.PureComponent {
 
   componentWillUnmount() {
     if (this.state.edited) {
-      this.setState({search: '', edited: false});
+      this.setState({ search: "", edited: false });
       this.props.onSearchContacts(Tinode.DEL_CHAR);
     }
   }
 
   handleSearchChange(e) {
-    this.setState({search: e.target.value});
+    this.setState({ search: e.target.value });
   }
 
   handleSearch(e) {
     e.preventDefault();
     const query = this.state.search.trim();
-    this.setState({edited: (query.length > 0)});
+    this.setState({ edited: query.length > 0 });
     this.props.onSearchContacts(query.length > 0 ? query : Tinode.DEL_CHAR);
   }
 
@@ -40,13 +40,13 @@ export default class SearchContacts extends React.PureComponent {
     if (this.state.edited) {
       this.props.onSearchContacts(Tinode.DEL_CHAR);
     }
-    this.setState({search: '', edited: false});
+    this.setState({ search: "", edited: false });
   }
 
   handleKeyDown(e) {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       this.handleSearch(e);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       this.handleClear();
     }
   }
@@ -56,16 +56,27 @@ export default class SearchContacts extends React.PureComponent {
       <div className="panel-form">
         <div className="panel-form-row">
           <i className="material-icons search">search</i>
-          <input className="search" type="text"
-              placeholder={this.props.placeholder}
-              value={this.state.search} onChange={this.handleSearchChange}
-              onKeyDown={this.handleKeyDown} required autoFocus />
-          {this.state.search ?
-            <a href="#" onClick={this.handleClear}><i className="material-icons">highlight_off</i></a>
-            :
-            <span><i className="material-icons">&nbsp;</i></span>}
+          <input
+            className="search"
+            type="text"
+            placeholder={this.props.placeholder}
+            value={this.state.search}
+            onChange={this.handleSearchChange}
+            onKeyDown={this.handleKeyDown}
+            required
+            autoFocus
+          />
+          {this.state.search ? (
+            <a href="#" onClick={this.handleClear}>
+              <i className="material-icons">highlight_off</i>
+            </a>
+          ) : (
+            <span>
+              <i className="material-icons">&nbsp;</i>
+            </span>
+          )}
         </div>
       </div>
     );
   }
-};
+}

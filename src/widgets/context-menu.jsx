@@ -1,120 +1,123 @@
 // Context Menu: popup/dropdown menu.
-import React from 'react';
-import { injectIntl, defineMessages } from 'react-intl';
+import React from "react";
+import { injectIntl, defineMessages } from "react-intl";
 
-import { REM_SIZE } from '../config.js';
+import { REM_SIZE } from "../config.js";
 
 const messages = defineMessages({
   info: {
-    id: 'menu_item_info',
-    defaultMessage: 'Info',
-    description: 'Show extended topic information'
+    id: "menu_item_info",
+    defaultMessage: "Info",
+    description: "Show extended topic information",
   },
   clear_messages: {
-    id: 'menu_item_clear_messages',
-    defaultMessage: 'Clear messages',
-    description: 'Delete all messages'
+    id: "menu_item_clear_messages",
+    defaultMessage: "Clear messages",
+    description: "Delete all messages",
   },
   clear_for_all: {
-    id: 'menu_item_clear_messages_for_all',
-    defaultMessage: 'Clear for All',
-    description: 'Delete all message(s) for all members'
+    id: "menu_item_clear_messages_for_all",
+    defaultMessage: "Clear for All",
+    description: "Delete all message(s) for all members",
   },
   delete: {
-    id: 'menu_item_delete',
-    defaultMessage: 'Delete',
-    description: 'Delete selected messages'
+    id: "menu_item_delete",
+    defaultMessage: "Delete",
+    description: "Delete selected messages",
   },
   delete_for_all: {
-    id: 'menu_item_delete_for_all',
-    defaultMessage: 'Delete for All',
-    description: 'Delete selected message(s) for all members'
+    id: "menu_item_delete_for_all",
+    defaultMessage: "Delete for All",
+    description: "Delete selected message(s) for all members",
   },
   send_retry: {
-    id: 'menu_item_send_retry',
-    defaultMessage: 'Retry',
-    description: 'Retry sending message'
+    id: "menu_item_send_retry",
+    defaultMessage: "Retry",
+    description: "Retry sending message",
   },
   mute: {
-    id: 'menu_item_mute',
-    defaultMessage: 'Mute',
-    description: 'Turn off notifications'
+    id: "menu_item_mute",
+    defaultMessage: "Mute",
+    description: "Turn off notifications",
   },
   unmute: {
-    id: 'menu_item_unmute',
-    defaultMessage: 'Unmute',
-    description: 'Turn notifications on'
+    id: "menu_item_unmute",
+    defaultMessage: "Unmute",
+    description: "Turn notifications on",
   },
   reply: {
-    id: 'menu_item_reply',
-    defaultMessage: 'Reply',
-    description: 'Reply to message'
+    id: "menu_item_reply",
+    defaultMessage: "Reply",
+    description: "Reply to message",
   },
   forward: {
-    id: 'menu_item_forward',
-    defaultMessage: 'Forward',
-    description: 'Forward message'
+    id: "menu_item_forward",
+    defaultMessage: "Forward",
+    description: "Forward message",
   },
   edit: {
-    id: 'menu_item_edit',
-    defaultMessage: 'Edit',
-    description: 'Edit message'
+    id: "menu_item_edit",
+    defaultMessage: "Edit",
+    description: "Edit message",
   },
   topic_delete: {
-    id: 'menu_item_delete_topic',
-    defaultMessage: 'Delete',
-    description: 'Delete entire topic'
+    id: "menu_item_delete_topic",
+    defaultMessage: "Delete",
+    description: "Delete entire topic",
   },
   topic_delete_warning: {
-    id: 'topic_delete_warning',
-    defaultMessage: 'Are you sure you want to delete this conversation? It cannot be undone.',
-    description: 'Alert warning when deleting entire topic'
+    id: "topic_delete_warning",
+    defaultMessage:
+      "Are you sure you want to delete this conversation? It cannot be undone.",
+    description: "Alert warning when deleting entire topic",
   },
   delete_messages_warning: {
-    id: 'delete_messages_warning',
-    defaultMessage: 'Are you sure you want to delete all messages for everyone? It cannot be undone.',
-    description: 'Alert dialog warning when hard-deleting all messages.'
+    id: "delete_messages_warning",
+    defaultMessage:
+      "Are you sure you want to delete all messages for everyone? It cannot be undone.",
+    description: "Alert dialog warning when hard-deleting all messages.",
   },
   unblock: {
-    id: 'menu_item_unblock',
-    defaultMessage: 'Unblock',
-    description: 'Unblock topic or user'
+    id: "menu_item_unblock",
+    defaultMessage: "Unblock",
+    description: "Unblock topic or user",
   },
   // Generic string suitable for either topic or user.
   block: {
-    id: 'menu_item_block',
-    defaultMessage: 'Block',
-    description: 'Block topic or user'
+    id: "menu_item_block",
+    defaultMessage: "Block",
+    description: "Block topic or user",
   },
   topic_block_warning: {
-    id: 'topic_block_warning',
-    defaultMessage: 'Are you sure you want to block this conversation?',
-    description: 'Alert warning when blocking a topic.'
+    id: "topic_block_warning",
+    defaultMessage: "Are you sure you want to block this conversation?",
+    description: "Alert warning when blocking a topic.",
   },
   member_delete: {
-    id: 'menu_item_member_delete',
-    defaultMessage: 'Remove',
-    description: 'Remove user from topic'
+    id: "menu_item_member_delete",
+    defaultMessage: "Remove",
+    description: "Remove user from topic",
   },
   archive: {
-    id: 'menu_item_archive_topic',
-    defaultMessage: 'Archive',
-    description: 'Move topic from the list of active chats to archive'
+    id: "menu_item_archive_topic",
+    defaultMessage: "Archive",
+    description: "Move topic from the list of active chats to archive",
   },
   unarchive: {
-    id: 'menu_item_restore_topic',
-    defaultMessage: 'Restore',
-    description: 'Restore topic from archive'
+    id: "menu_item_restore_topic",
+    defaultMessage: "Restore",
+    description: "Restore topic from archive",
   },
   edit_permissions: {
-    id: 'menu_item_edit_permissions',
-    defaultMessage: 'Edit permissions',
-    description: 'Menu item [Edit permissions]'
+    id: "menu_item_edit_permissions",
+    defaultMessage: "Edit permissions",
+    description: "Menu item [Edit permissions]",
   },
   clear_messages_warning: {
-    id: 'clear_messages_warning',
-    defaultMessage: 'Are you sure you want to clear all messages? It cannot be undone.',
-    description: 'Alert dialog warning when deleting all messages.'
+    id: "clear_messages_warning",
+    defaultMessage:
+      "Are you sure you want to clear all messages? It cannot be undone.",
+    description: "Alert dialog warning when deleting all messages.",
   },
 });
 
@@ -124,7 +127,7 @@ class ContextMenu extends React.Component {
 
     this.selfRef = React.createRef();
 
-    const {formatMessage} = props.intl;
+    const { formatMessage } = props.intl;
 
     this.handlePageClick = this.handlePageClick.bind(this);
     this.handleEscapeKey = this.handleEscapeKey.bind(this);
@@ -132,138 +135,145 @@ class ContextMenu extends React.Component {
 
     // Preconfigured menu items.
     this.MenuItems = {
-      'topic_info': {
-        id: 'topic_info',
+      topic_info: {
+        id: "topic_info",
         title: formatMessage(messages.info),
-        handler: null
+        handler: null,
       },
-      'messages_clear': {
-        id: 'messages_clear',
+      messages_clear: {
+        id: "messages_clear",
         title: formatMessage(messages.clear_messages),
         handler: (params, errorHandler) => {
           return props.onShowAlert(
             formatMessage(messages.clear_messages), // title
             formatMessage(messages.clear_messages_warning), // content
-            (_ => { this.deleteMessages(true, false, params, errorHandler); }), // onConfirm
+            (_) => {
+              this.deleteMessages(true, false, params, errorHandler);
+            }, // onConfirm
             null, // "OK"
             true, // Show Reject button
-            null  // "Cancel"
+            null // "Cancel"
           );
-        }
+        },
       },
-      'messages_clear_hard': {
-        id: 'messages_clear_hard',
+      messages_clear_hard: {
+        id: "messages_clear_hard",
         title: formatMessage(messages.clear_for_all),
         handler: (params, errorHandler) => {
           return props.onShowAlert(
             formatMessage(messages.clear_for_all), // title
             formatMessage(messages.delete_messages_warning), // content
-            (_ => { return this.deleteMessages(true, true, params, errorHandler); }),
+            (_) => {
+              return this.deleteMessages(true, true, params, errorHandler);
+            },
             null, // "OK"
             true, // Show Reject button
-            null  // "Cancel"
+            null // "Cancel"
           );
-        }
+        },
       },
-      'message_delete': {
-        id: 'message_delete',
+      message_delete: {
+        id: "message_delete",
         title: formatMessage(messages.delete),
         handler: (params, errorHandler) => {
           return this.deleteMessages(false, false, params, errorHandler);
-        }
+        },
       },
-      'message_delete_hard': {
-        id: 'message_delete_hard',
+      message_delete_hard: {
+        id: "message_delete_hard",
         title: formatMessage(messages.delete_for_all),
         handler: (params, errorHandler) => {
           return this.deleteMessages(false, true, params, errorHandler);
-        }
+        },
       },
-      'menu_item_send_retry': {
-        id: 'menu_item_send_retry',
+      menu_item_send_retry: {
+        id: "menu_item_send_retry",
         title: formatMessage(messages.send_retry),
         handler: (params, errorHandler) => {
           return this.retryMessage(params, errorHandler);
-        }
+        },
       },
-      'menu_item_reply': {
-        id: 'menu_item_reply',
+      menu_item_reply: {
+        id: "menu_item_reply",
         title: formatMessage(messages.reply),
         handler: (params, errorHandler) => {
           return this.replyToMessage(params, errorHandler);
-        }
+        },
       },
-      'menu_item_forward': {
-        id: 'menu_item_forward',
+      menu_item_forward: {
+        id: "menu_item_forward",
         title: formatMessage(messages.forward),
-        handler: _ => {} /* the action is taken directly in tinode-web */
+        handler: (_) => {} /* the action is taken directly in tinode-web */,
       },
-      'menu_item_edit': {
-        id: 'menu_item_edit',
+      menu_item_edit: {
+        id: "menu_item_edit",
         title: formatMessage(messages.edit),
         handler: (params, errorHandler) => {
           return this.editMessage(params, errorHandler);
-        }
+        },
       },
-      'topic_unmute': {
-        id: 'topic_unmute',
+      topic_unmute: {
+        id: "topic_unmute",
         title: formatMessage(messages.unmute),
-        handler: this.topicPermissionSetter.bind(this, '+P')
+        handler: this.topicPermissionSetter.bind(this, "+P"),
       },
-      'topic_mute': {
-        id: 'topic_mute',
+      topic_mute: {
+        id: "topic_mute",
         title: formatMessage(messages.mute),
-        handler: this.topicPermissionSetter.bind(this, '-P')
+        handler: this.topicPermissionSetter.bind(this, "-P"),
       },
-      'topic_unblock': {
-        id: 'topic_unblock',
+      topic_unblock: {
+        id: "topic_unblock",
         title: formatMessage(messages.unblock),
-        handler: this.topicPermissionSetter.bind(this, '+JP')
+        handler: this.topicPermissionSetter.bind(this, "+JP"),
       },
-      'topic_block': {
-        id: 'topic_block',
+      topic_block: {
+        id: "topic_block",
         title: formatMessage(messages.block),
         handler: (params, errorHandler) => {
           return props.onShowAlert(
             formatMessage(messages.block), // title
             formatMessage(messages.topic_block_warning), // content
-            (_ => this.topicPermissionSetter('-JP', params, errorHandler).then(ctrl => {
-              this.props.onTopicRemoved(params.topicName);
-              return ctrl;
-            })),
+            (_) =>
+              this.topicPermissionSetter("-JP", params, errorHandler).then(
+                (ctrl) => {
+                  this.props.onTopicRemoved(params.topicName);
+                  return ctrl;
+                }
+              ),
             null, // "OK"
             true, // Show Reject button
-            null  // "Cancel"
+            null // "Cancel"
           );
-        }
+        },
       },
-      'topic_delete': {
-        id: 'topic_delete',
+      topic_delete: {
+        id: "topic_delete",
         title: formatMessage(messages.topic_delete),
         handler: (params, errorHandler) => {
           return props.onShowAlert(
             formatMessage(messages.topic_delete), // title
             formatMessage(messages.topic_delete_warning), // content
-            (_ => {
+            (_) => {
               const topic = this.props.tinode.getTopic(params.topicName);
               if (!topic) {
                 console.warn("Topic not found: ", params.topicName);
                 return;
               }
-              return topic.delTopic(true).catch(err => {
+              return topic.delTopic(true).catch((err) => {
                 if (errorHandler) {
-                  errorHandler(err.message, 'err');
+                  errorHandler(err.message, "err");
                 }
               });
-            }),
+            },
             null, // "OK"
             true, // Show Reject button
-            null  // "Cancel"
+            null // "Cancel"
           );
-        }
+        },
       },
-      'topic_archive': {
-        id: 'topic_archive',
+      topic_archive: {
+        id: "topic_archive",
         title: formatMessage(messages.archive),
         handler: (params, errorHandler) => {
           const topic = this.props.tinode.getTopic(params.topicName);
@@ -271,15 +281,15 @@ class ContextMenu extends React.Component {
             console.warn("Topic not found: ", params.topicName);
             return;
           }
-          return topic.archive(true).catch(err => {
+          return topic.archive(true).catch((err) => {
             if (errorHandler) {
-              errorHandler(err.message, 'err');
+              errorHandler(err.message, "err");
             }
           });
-        }
+        },
       },
-      'topic_restore': {
-        id: 'topic_restore',
+      topic_restore: {
+        id: "topic_restore",
         title: formatMessage(messages.unarchive),
         handler: (params, errorHandler) => {
           const topic = this.props.tinode.getTopic(params.topicName);
@@ -287,66 +297,72 @@ class ContextMenu extends React.Component {
             console.warn("Topic not found: ", params.topicName);
             return;
           }
-          return topic.archive(false).catch(err => {
+          return topic.archive(false).catch((err) => {
             if (errorHandler) {
-              errorHandler(err.message, 'err');
+              errorHandler(err.message, "err");
             }
           });
-        }
+        },
       },
       // menu_item_edit_permissions is defined elsewhere.
-      'permissions': {
-        id: 'permissions',
+      permissions: {
+        id: "permissions",
         title: formatMessage(messages.edit_permissions),
-        handler: null
+        handler: null,
       },
-      'member_delete': {
-        id: 'member_delete',
+      member_delete: {
+        id: "member_delete",
         title: formatMessage(messages.member_delete),
         handler: (params, errorHandler) => {
           const topic = this.props.tinode.getTopic(params.topicName);
           if (!topic || !params.user) {
-            console.warn("Topic or user not found: '" + params.topicName + "', '" + params.user + "'");
+            console.warn(
+              "Topic or user not found: '" +
+                params.topicName +
+                "', '" +
+                params.user +
+                "'"
+            );
             return;
           }
-          return topic.delSubscription(params.user).catch(err => {
+          return topic.delSubscription(params.user).catch((err) => {
             if (errorHandler) {
-              errorHandler(err.message, 'err');
+              errorHandler(err.message, "err");
             }
           });
-        }
+        },
       },
-      'member_mute': {
-        id: 'member_mute',
+      member_mute: {
+        id: "member_mute",
         title: formatMessage(messages.mute),
-        handler: this.topicPermissionSetter.bind(this, '-P')
+        handler: this.topicPermissionSetter.bind(this, "-P"),
       },
-      'member_unmute': {
-        id: 'member_unmute',
+      member_unmute: {
+        id: "member_unmute",
         title: formatMessage(messages.unmute),
-        handler: this.topicPermissionSetter.bind(this, '+P')
+        handler: this.topicPermissionSetter.bind(this, "+P"),
       },
-      'member_block': {
-        id: 'member_block',
+      member_block: {
+        id: "member_block",
         title: formatMessage(messages.block),
-        handler: this.topicPermissionSetter.bind(this, '-JP')
+        handler: this.topicPermissionSetter.bind(this, "-JP"),
       },
-      'member_unblock': {
-        id: 'member_unblock',
+      member_unblock: {
+        id: "member_unblock",
         title: formatMessage(messages.unblock),
-        handler: this.topicPermissionSetter.bind(this, '+JP')
+        handler: this.topicPermissionSetter.bind(this, "+JP"),
       },
     };
   }
 
   componentDidMount() {
-    document.addEventListener('mousedown', this.handlePageClick, false);
-    document.addEventListener('keyup', this.handleEscapeKey, false);
+    document.addEventListener("mousedown", this.handlePageClick, false);
+    document.addEventListener("keyup", this.handleEscapeKey, false);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousedown', this.handlePageClick, false);
-    document.removeEventListener('keyup', this.handleEscapeKey, false);
+    document.removeEventListener("mousedown", this.handlePageClick, false);
+    document.removeEventListener("keyup", this.handleEscapeKey, false);
   }
 
   handlePageClick(e) {
@@ -369,7 +385,7 @@ class ContextMenu extends React.Component {
     e.stopPropagation();
     this.props.hide();
     let item = this.props.items[e.currentTarget.dataset.id];
-    if (typeof item == 'string') {
+    if (typeof item == "string") {
       item = this.MenuItems[item];
     }
 
@@ -379,7 +395,8 @@ class ContextMenu extends React.Component {
       this.props.onAction(
         item.id,
         item.handler(this.props.params, this.props.onError),
-        this.props.params);
+        this.props.params
+      );
     }
   }
 
@@ -400,15 +417,15 @@ class ContextMenu extends React.Component {
       return;
     }
 
-    const promise = all ?
-      topic.delMessagesAll(hard) :
-      params.replace > 0 ?
-        topic.delMessagesEdits(params.replace, hard) :
-        topic.delMessagesList([params.seq], hard);
+    const promise = all
+      ? topic.delMessagesAll(hard)
+      : params.replace > 0
+      ? topic.delMessagesEdits(params.replace, hard)
+      : topic.delMessagesList([params.seq], hard);
 
-    return promise.catch(err => {
+    return promise.catch((err) => {
       if (errorHandler) {
-        errorHandler(err.message, 'err');
+        errorHandler(err.message, "err");
       }
     });
   }
@@ -421,9 +438,9 @@ class ContextMenu extends React.Component {
       return;
     }
     const msg = topic.createMessage(params.content, false);
-    return topic.publishDraft(msg).catch(err => {
+    return topic.publishDraft(msg).catch((err) => {
       if (errorHandler) {
-        errorHandler(err.message, 'err');
+        errorHandler(err.message, "err");
       }
     });
   }
@@ -438,32 +455,45 @@ class ContextMenu extends React.Component {
 
     let result = topic.updateMode(params.user, mode);
     if (errorHandler) {
-      result = result.catch(err => errorHandler(err.message, 'err'));
+      result = result.catch((err) => errorHandler(err.message, "err"));
     }
     return result;
   }
 
   replyToMessage(params, errorHandler) {
-    params.pickReply(params.seq, params.content, params.userFrom, params.userName, errorHandler);
+    params.pickReply(
+      params.seq,
+      params.content,
+      params.userFrom,
+      params.userName,
+      errorHandler
+    );
   }
 
   editMessage(params, errorHandler) {
-    params.editMessage(params.replace || params.seq, params.content, errorHandler);
+    params.editMessage(
+      params.replace || params.seq,
+      params.content,
+      errorHandler
+    );
   }
 
   render() {
     const menu = [];
     let count = 0;
     this.props.items.map((item) => {
-      if (typeof item == 'string') {
+      if (typeof item == "string") {
         item = this.MenuItems[item];
       }
       if (item && item.title) {
         menu.push(
-          item.title == '-' ?
+          item.title == "-" ? (
             <li className="separator" key={count} />
-            :
-            <li onClick={this.handleClick} data-id={count} key={count}>{item.title}</li>
+          ) : (
+            <li onClick={this.handleClick} data-id={count} key={count}>
+              {item.title}
+            </li>
+          )
         );
       }
       count++;
@@ -472,16 +502,18 @@ class ContextMenu extends React.Component {
     // Ensure that menu is inside the app-container.
     const hSize = 12 * REM_SIZE;
     const vSize = REM_SIZE * (0.7 + menu.length * 2.5);
-    const left = (this.props.bounds.right - this.props.clickAt.x < hSize) ?
-        (this.props.clickAt.x - this.props.bounds.left - hSize) :
-        (this.props.clickAt.x - this.props.bounds.left);
-    const top = (this.props.bounds.bottom - this.props.clickAt.y < vSize) ?
-        (this.props.clickAt.y - this.props.bounds.top - vSize) :
-        (this.props.clickAt.y - this.props.bounds.top);
+    const left =
+      this.props.bounds.right - this.props.clickAt.x < hSize
+        ? this.props.clickAt.x - this.props.bounds.left - hSize
+        : this.props.clickAt.x - this.props.bounds.left;
+    const top =
+      this.props.bounds.bottom - this.props.clickAt.y < vSize
+        ? this.props.clickAt.y - this.props.bounds.top - vSize
+        : this.props.clickAt.y - this.props.bounds.top;
 
     const position = {
-      left: left + 'px',
-      top: top + 'px'
+      left: left + "px",
+      top: top + "px",
     };
 
     return (

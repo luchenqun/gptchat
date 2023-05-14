@@ -1,18 +1,18 @@
 // ValidationView: panel for confirming credentials, like email or phone.
-import React from 'react';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import React from "react";
+import { FormattedMessage, defineMessages, injectIntl } from "react-intl";
 
 const messages = defineMessages({
   phone: {
-    id: 'phone_dative',
-    defaultMessage: 'phone',
+    id: "phone_dative",
+    defaultMessage: "phone",
     description: "Dative case of 'phone', i.e. 'phone' in 'by phone'",
   },
   email: {
-    id: 'email_dative',
-    defaultMessage: 'email',
+    id: "email_dative",
+    defaultMessage: "email",
     description: "Dative case of 'email', i.e. 'email' in 'by email'",
-  }
+  },
 });
 
 class ValidationView extends React.PureComponent {
@@ -20,8 +20,8 @@ class ValidationView extends React.PureComponent {
     super(props);
 
     this.state = {
-      code: props.credCode || '',
-      codeReceived: props.credCode
+      code: props.credCode || "",
+      codeReceived: props.credCode,
     };
 
     this.handleCodeChange = this.handleCodeChange.bind(this);
@@ -33,8 +33,8 @@ class ValidationView extends React.PureComponent {
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.credCode != prevState.codeReceived) {
       return {
-        code: nextProps.credCode || '',
-        codeReceived: nextProps.credCode
+        code: nextProps.credCode || "",
+        codeReceived: nextProps.credCode,
       };
     }
 
@@ -44,26 +44,37 @@ class ValidationView extends React.PureComponent {
   componentDidMount() {
     // Submit code automatically if it's received from the parent.
     if (this.props.credCode) {
-      this.props.onSubmit(this.props.credMethod, this.props.credCode, this.props.credToken);
+      this.props.onSubmit(
+        this.props.credMethod,
+        this.props.credCode,
+        this.props.credToken
+      );
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
     // Submit code automatically if it's received from the parent.
-    if (this.state.codeReceived && this.state.code && this.state.code != prevState.code) {
-      this.props.onSubmit(this.props.credMethod, this.state.code, this.props.credToken);
+    if (
+      this.state.codeReceived &&
+      this.state.code &&
+      this.state.code != prevState.code
+    ) {
+      this.props.onSubmit(
+        this.props.credMethod,
+        this.state.code,
+        this.props.credToken
+      );
     }
   }
 
-
   handleCodeChange(e) {
-    this.setState({code: e.target.value.replace(/[^\d]/g, '')});
+    this.setState({ code: e.target.value.replace(/[^\d]/g, "") });
   }
 
   handleKeyPress(e) {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       this.handleSubmit(e);
-    } else if (e.key == 'Escape') {
+    } else if (e.key == "Escape") {
       this.handleCancel(e);
     }
   }
@@ -71,7 +82,11 @@ class ValidationView extends React.PureComponent {
   handleSubmit(e) {
     e.preventDefault();
     if (this.state.code && this.state.code.trim()) {
-      this.props.onSubmit(this.props.credMethod, this.state.code.trim(), this.props.credToken);
+      this.props.onSubmit(
+        this.props.credMethod,
+        this.state.code.trim(),
+        this.props.credToken
+      );
     }
   }
 
@@ -82,38 +97,61 @@ class ValidationView extends React.PureComponent {
 
   render() {
     const { formatMessage } = this.props.intl;
-    const methods = {'email': formatMessage(messages.email), 'tel': formatMessage(messages.phone)};
+    const methods = {
+      email: formatMessage(messages.email),
+      tel: formatMessage(messages.phone),
+    };
     const method = methods[this.props.credMethod] || this.props.credMethod;
     return (
       <div className="panel-form">
         <div className="panel-form-row">
           <label className="small gray" htmlFor="enter-confirmation-code">
-            <FormattedMessage id="enter_confirmation_code_prompt"
+            <FormattedMessage
+              id="enter_confirmation_code_prompt"
               defaultMessage="Confirmation code"
               description="Request to enter confirmation code"
-              values={{method: method}} />
+              values={{ method: method }}
+            />
           </label>
         </div>
         <div className="panel-form-row">
-          <FormattedMessage id="numeric_confirmation_code_prompt"
-            defaultMessage="Numbers only" description="Prompt for numeric conformation code">{
-            (numbers_only) => <input type="text" id="enter-confirmation-code"
-              placeholder={numbers_only}
-              value={this.state.code} onChange={this.handleCodeChange}
-              onKeyPress={this.handleKeyPress} required />
-          }</FormattedMessage>
+          <FormattedMessage
+            id="numeric_confirmation_code_prompt"
+            defaultMessage="Numbers only"
+            description="Prompt for numeric conformation code"
+          >
+            {(numbers_only) => (
+              <input
+                type="text"
+                id="enter-confirmation-code"
+                placeholder={numbers_only}
+                value={this.state.code}
+                onChange={this.handleCodeChange}
+                onKeyPress={this.handleKeyPress}
+                required
+              />
+            )}
+          </FormattedMessage>
         </div>
         <div className="dialog-buttons">
           <button className="secondary" onClick={this.handleCancel}>
-            <FormattedMessage id="button_cancel" defaultMessage="Cancel" description="Button [Cancel]" />
+            <FormattedMessage
+              id="button_cancel"
+              defaultMessage="Cancel"
+              description="Button [Cancel]"
+            />
           </button>
           <button className="primary" onClick={this.handleSubmit}>
-            <FormattedMessage id="button_confirm" defaultMessage="Confirm" description="Button [Confirm]" />
+            <FormattedMessage
+              id="button_confirm"
+              defaultMessage="Confirm"
+              description="Button [Confirm]"
+            />
           </button>
         </div>
       </div>
     );
   }
-};
+}
 
 export default injectIntl(ValidationView);

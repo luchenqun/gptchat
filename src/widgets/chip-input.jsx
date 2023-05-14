@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
-import Chip from './chip.jsx';
+import Chip from "./chip.jsx";
 
-import { makeImageUrl } from '../lib/blob-helpers.js';
+import { makeImageUrl } from "../lib/blob-helpers.js";
 
 /* BEGIN ChipInput: group membership widget */
 export default class ChipInput extends React.Component {
@@ -10,7 +10,7 @@ export default class ChipInput extends React.Component {
     super(props);
 
     this.state = ChipInput.deriveStateFromProps(props);
-    this.state.input = '';
+    this.state.input = "";
     this.state.focused = false;
 
     this.handleTextInput = this.handleTextInput.bind(this);
@@ -23,20 +23,22 @@ export default class ChipInput extends React.Component {
 
   static deriveStateFromProps(props) {
     return {
-      placeholder: props.chips ? '' : props.prompt,
+      placeholder: props.chips ? "" : props.prompt,
       sortedChips: ChipInput.sortChips(props.chips, props.staticMembers),
-      chipIndex: ChipInput.indexChips(props.chips)
+      chipIndex: ChipInput.indexChips(props.chips),
     };
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.chips != this.props.chips ||
+    if (
+      prevProps.chips != this.props.chips ||
       prevProps.staticMembers != this.props.staticMembers ||
-      prevProps.prompt != this.props.prompt) {
+      prevProps.prompt != this.props.prompt
+    ) {
       this.setState(ChipInput.deriveStateFromProps(this.props));
     }
     if (!prevState || this.props.chips.length > prevState.sortedChips.length) {
-      this.setState({input: ''});
+      this.setState({ input: "" });
     }
   }
 
@@ -46,7 +48,7 @@ export default class ChipInput extends React.Component {
     let count = 0;
     chips.map((item) => {
       index[item.user] = count;
-      count ++;
+      count++;
     });
     return index;
   }
@@ -66,7 +68,7 @@ export default class ChipInput extends React.Component {
   }
 
   handleTextInput(e) {
-    this.setState({input: e.target.value});
+    this.setState({ input: e.target.value });
     if (this.props.filterFunc) {
       this.props.filterFunc(e.target.value);
     }
@@ -82,29 +84,29 @@ export default class ChipInput extends React.Component {
   }
 
   handleFocusGained() {
-    this.setState({focused: true});
+    this.setState({ focused: true });
   }
 
   handleFocusLost() {
-    this.setState({focused: false});
+    this.setState({ focused: false });
     if (this.props.onFocusLost) {
       this.props.onFocusLost(this.state.input);
     }
   }
 
   handleKeyDown(e) {
-    if (e.key === 'Backspace') {
+    if (e.key === "Backspace") {
       if (this.state.input.length == 0 && this.state.sortedChips.length > 0) {
         const at = this.state.sortedChips.length - 1;
         if (this.state.sortedChips[at].user !== this.props.staticMembers) {
           this.removeChipAt(at);
         }
       }
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       if (this.props.onEnter) {
         this.props.onEnter(this.state.input);
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       if (this.props.onCancel) {
         this.props.onCancel();
       }
@@ -127,16 +129,18 @@ export default class ChipInput extends React.Component {
           required={staticMembers.includes(item.user)}
           invalid={item.invalid}
           index={count}
-          key={item.user} />
+          key={item.user}
+        />
       );
       count++;
     });
-    const className = "chip-input" + (this.state.focused ? ' focused' : '');
+    const className = "chip-input" + (this.state.focused ? " focused" : "");
     const autoFocus = !(this.props.tabIndex > 0);
     return (
       <div className={className}>
         {chips}
-        <input type="text"
+        <input
+          type="text"
           placeholder={this.state.placeholder}
           onChange={this.handleTextInput}
           onFocus={this.handleFocusGained}
@@ -144,8 +148,9 @@ export default class ChipInput extends React.Component {
           onKeyDown={this.handleKeyDown}
           value={this.state.input}
           tabIndex={this.props.tabIndex}
-          autoFocus={autoFocus} />
+          autoFocus={autoFocus}
+        />
       </div>
     );
   }
-};
+}
